@@ -4,7 +4,10 @@ import 'package:flutter/services.dart';
 import '../../services/couple_service.dart';
 
 class PairingScreen extends StatefulWidget {
-  const PairingScreen({super.key});
+  final String?
+  existingInviteCode; // passed if this user already created an invite
+
+  const PairingScreen({super.key, this.existingInviteCode});
 
   @override
   State<PairingScreen> createState() => _PairingScreenState();
@@ -16,10 +19,22 @@ class _PairingScreenState extends State<PairingScreen> {
   final CoupleService _coupleService = CoupleService();
   final TextEditingController _codeController = TextEditingController();
 
-  _Mode _mode = _Mode.choose;
+  late _Mode _mode;
   String? _generatedCode;
   String? _errorMessage;
   bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Resume the waiting screen instead of showing choose buttons again
+    if (widget.existingInviteCode != null) {
+      _mode = _Mode.invite;
+      _generatedCode = widget.existingInviteCode;
+    } else {
+      _mode = _Mode.choose;
+    }
+  }
 
   Future<void> _handleInvite() async {
     setState(() => _isLoading = true);
@@ -46,6 +61,12 @@ class _PairingScreenState extends State<PairingScreen> {
       _errorMessage = error;
     });
     // If error is null, AuthGate's stream picks up the new coupleId automatically
+  }
+
+  @override
+  void dispose() {
+    _codeController.dispose();
+    super.dispose();
   }
 
   @override

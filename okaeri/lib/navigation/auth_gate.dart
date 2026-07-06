@@ -4,7 +4,7 @@ import '../services/auth_service.dart';
 import '../services/couple_service.dart';
 import '../screens/auth/login_screen.dart';
 import '../screens/pairing/pairing_screen.dart';
-import '../screens/message_board/message_board_screen.dart';
+import 'app_shell.dart';
 
 class AuthGate extends StatelessWidget {
   const AuthGate({super.key});
@@ -46,10 +46,13 @@ class AuthGate extends StatelessWidget {
                 );
 
                 if (members.length < 2) {
-                  return const PairingScreen(); // still waiting for partner
+                  // Resume showing the existing code, don't let them regenerate
+                  final existingCode =
+                      coupleSnapshot.data?['inviteCode'] as String?;
+                  return PairingScreen(existingInviteCode: existingCode);
                 }
 
-                return MessageBoardScreen(coupleId: coupleId);
+                return AppShell(coupleId: coupleId);
               },
             );
           },
