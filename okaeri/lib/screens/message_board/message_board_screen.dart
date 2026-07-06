@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../../models/message.dart';
 import '../../services/message_service.dart';
 import '../../widgets/message_cart.dart';
@@ -14,10 +15,16 @@ class _MessageBoardScreenState extends State<MessageBoardScreen> {
   final MessageService _service = MessageService();
   final TextEditingController _controller = TextEditingController();
 
-  // Temporary fixed IDs until real auth is wired in
-  final String myId = 'partner1';
-  final String partnerId = 'partner2';
-  final String myName = 'Aly'; // change to your name for testing
+  late final String myId;
+  late final String myName;
+
+  @override
+  void initState() {
+    super.initState();
+    final user = FirebaseAuth.instance.currentUser!;
+    myId = user.uid;
+    myName = user.email!.split('@')[0]; // temporary display name from email
+  }
 
   @override
   void dispose() {
@@ -41,24 +48,20 @@ class _MessageBoardScreenState extends State<MessageBoardScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Message Board')),
+      appBar: AppBar(
+        title: const Text('Message Board'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: () => FirebaseAuth.instance.signOut(),
+          ),
+        ],
+      ),
       body: Column(
         children: [
           Expanded(
             child: ListView(
               children: [
-                // Partner's message (read-only)
-                StreamBuilder<Message?>(
-                  stream: _service.watchMessage(partnerId),
-                  builder: (context, snapshot) {
-                    return MessageCard(
-                      label: 'Partner',
-                      message: snapshot.data,
-                      isMe: false,
-                    );
-                  },
-                ),
-                // My message (read-only display of what I last sent)
                 StreamBuilder<Message?>(
                   stream: _service.watchMessage(myId),
                   builder: (context, snapshot) {

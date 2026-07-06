@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
-import 'screens/message_board/message_board_screen.dart';
+import 'navigation/auth_gate.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -35,8 +35,9 @@ class MyApp extends StatelessWidget {
         // tested with just a hot reload.
         colorScheme: .fromSeed(seedColor: Colors.green),
       ),
+      debugShowCheckedModeBanner: false,
       // home: const MyHomePage(title: 'Flutter Demo Home Page'),
-      home: const MessageBoardScreen(),
+      home: const AuthGate(),
     );
   }
 }
