@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -15,11 +16,21 @@ class AuthService {
     required String password,
   }) async {
     try {
-      await _auth.createUserWithEmailAndPassword(
+      final credential = await _auth.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
-      return null; // null = success
+
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(credential.user!.uid)
+          .set({
+            'email': email,
+            'displayName': email.split('@').first, // editable later in Profile
+            'coupleId': null,
+          });
+
+      return null;
     } on FirebaseAuthException catch (e) {
       return e.message ?? 'Sign up failed';
     }
