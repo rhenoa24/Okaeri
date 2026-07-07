@@ -6,7 +6,6 @@ import '../../models/message.dart';
 import '../../services/message_service.dart';
 import '../../services/user_service.dart';
 import '../../widgets/message_card.dart';
-import '../profile/profile_screen.dart';
 
 class MessageBoardScreen extends StatefulWidget {
   final String coupleId;

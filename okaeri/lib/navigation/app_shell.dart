@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../screens/home/home_screen.dart';
 import '../screens/notes/notes_screen.dart';
+import '../screens/notes/note_editor_screen.dart';
 import '../screens/calendar/calendar_screen.dart';
 import '../screens/more/more_screen.dart';
 
@@ -45,8 +46,15 @@ class _AppShellState extends State<AppShell> {
                 ),
                 onTap: () {
                   Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('New Note — coming soon!')),
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => NoteEditorScreen(
+                        coupleId: widget.coupleId,
+                        initialVisibility:
+                            'shared', // default; user can toggle in editor
+                      ),
+                    ),
                   );
                 },
               ),
