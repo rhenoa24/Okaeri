@@ -17,7 +17,7 @@ class MessageCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-      color: isMe ? Colors.pink.shade50 : Colors.blue.shade50,
+      // color: isMe ? Colors.pink.shade50 : Colors.blue.shade50,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
         padding: const EdgeInsets.all(16),

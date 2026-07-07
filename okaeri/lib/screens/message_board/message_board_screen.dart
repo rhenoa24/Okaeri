@@ -5,7 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../models/message.dart';
 import '../../services/message_service.dart';
 import '../../services/user_service.dart';
-import '../../widgets/message_cart.dart';
+import '../../widgets/message_card.dart';
 import '../profile/profile_screen.dart';
 
 class MessageBoardScreen extends StatefulWidget {
@@ -125,22 +125,7 @@ class _MessageBoardScreenState extends State<MessageBoardScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Message Board'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.person),
-            onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const ProfileScreen()),
-            ),
-          ),
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () => FirebaseAuth.instance.signOut(),
-          ),
-        ],
-      ),
+      appBar: AppBar(title: const Text('Message Board')),
       body: Column(
         children: [
           Expanded(child: ListView(children: _buildOrderedCards())),

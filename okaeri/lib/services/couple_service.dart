@@ -77,4 +77,55 @@ class CoupleService {
 
     return null; // success
   }
+
+  // Disconnect both partners AND permanently delete all shared data
+  // under this couple (messageBoard now; add more subcollections here
+  // as new features are built, e.g. notes, calendarEntries).
+  Future<void> unpair(String coupleId) async {
+    final coupleRef = _firestore.collection('couples').doc(coupleId);
+    final coupleDoc = await coupleRef.get();
+    final members = List<String>.from(coupleDoc.data()?['members'] ?? []);
+    final inviteCode = coupleDoc.data()?['inviteCode'] as String?;
+
+    // Free both accounts to pair again
+    final userBatch = _firestore.batch();
+    for (final uid in members) {
+      userBatch.set(_firestore.collection('users').doc(uid), {
+        'coupleId': null,
+      }, SetOptions(merge: true));
+    }
+    await userBatch.commit();
+
+    // Invalidate the old code so it can never be reused
+    if (inviteCode != null) {
+      await _firestore.collection('invites').doc(inviteCode).update({
+        'used': true,
+      });
+    }
+
+    // Delete all known subcollections under this couple
+    await _deleteSubcollection(coupleRef.collection('messageBoard'));
+    // Add future subcollections here as they're built, e.g.:
+    // await _deleteSubcollection(coupleRef.collection('notes'));
+    // await _deleteSubcollection(coupleRef.collection('calendarEntries'));
+
+    // Finally, delete the couple doc itself
+    await coupleRef.delete();
+  }
+
+  Future<void> _deleteSubcollection(CollectionReference collection) async {
+    const batchSize = 100;
+    QuerySnapshot snapshot = await collection.limit(batchSize).get();
+
+    while (snapshot.docs.isNotEmpty) {
+      final batch = _firestore.batch();
+      for (final doc in snapshot.docs) {
+        batch.delete(doc.reference);
+      }
+      await batch.commit();
+
+      if (snapshot.docs.length < batchSize) break;
+      snapshot = await collection.limit(batchSize).get();
+    }
+  }
 }

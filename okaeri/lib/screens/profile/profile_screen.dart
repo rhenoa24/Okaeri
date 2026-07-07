@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/services.dart';
 import '../../services/user_service.dart';
+import '../../services/couple_service.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -11,12 +13,14 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   final UserService _userService = UserService();
+  final CoupleService _coupleService = CoupleService();
   final _nameController = TextEditingController();
   final _currentPasswordController = TextEditingController();
   final _newPasswordController = TextEditingController();
 
   bool _isLoadingName = false;
   bool _isLoadingPassword = false;
+  bool _isUnpairing = false;
   String? _nameMessage;
   String? _passwordMessage;
 
@@ -67,6 +71,41 @@ class _ProfileScreenState extends State<ProfileScreen> {
       _currentPasswordController.clear();
       _newPasswordController.clear();
     }
+  }
+
+  Future<void> _confirmUnpair(String coupleId) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Unpair from partner?'),
+        content: const Text(
+          'You and your partner will both be disconnected, and ALL shared '
+          'notes, messages, and calendar entries will be permanently deleted. '
+          'This invite code will also stop working.\n\n'
+          'This cannot be undone.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text(
+              'Delete & Unpair',
+              style: TextStyle(color: Colors.red),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    setState(() => _isUnpairing = true);
+    await _coupleService.unpair(coupleId);
+    // No need to manually navigate — AuthGate's stream will detect
+    // coupleId == null and route back to PairingScreen automatically.
   }
 
   @override
@@ -161,6 +200,90 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
                 : const Text('Update Password'),
+          ),
+
+          const SizedBox(height: 32),
+          const Divider(),
+          const SizedBox(height: 20),
+
+          const Text(
+            'Your Home',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 8),
+          StreamBuilder<String?>(
+            stream: _coupleService.watchCoupleId(uid),
+            builder: (context, coupleIdSnapshot) {
+              final coupleId = coupleIdSnapshot.data;
+              if (coupleId == null) {
+                return const Text(
+                  'Not paired yet.',
+                  style: TextStyle(color: Colors.grey),
+                );
+              }
+
+              return StreamBuilder<Map<String, dynamic>?>(
+                stream: _coupleService.watchCouple(coupleId),
+                builder: (context, coupleSnapshot) {
+                  final code = coupleSnapshot.data?['inviteCode'] as String?;
+
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text('Your invite code'),
+                      const SizedBox(height: 8),
+                      InkWell(
+                        onTap: code == null
+                            ? null
+                            : () {
+                                Clipboard.setData(ClipboardData(text: code));
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Copied!')),
+                                );
+                              },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 12,
+                          ),
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.pink),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            code ?? '------',
+                            style: const TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 3,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      OutlinedButton(
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.red,
+                          side: const BorderSide(color: Colors.red),
+                        ),
+                        onPressed: _isUnpairing
+                            ? null
+                            : () => _confirmUnpair(coupleId),
+                        child: _isUnpairing
+                            ? const SizedBox(
+                                height: 18,
+                                width: 18,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Text('Unpair from partner'),
+                      ),
+                    ],
+                  );
+                },
+              );
+            },
           ),
         ],
       ),
