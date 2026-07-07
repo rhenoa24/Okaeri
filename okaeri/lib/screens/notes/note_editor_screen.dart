@@ -144,48 +144,75 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
           ),
         ],
       ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: TextField(
-              controller: _titleController,
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              decoration: const InputDecoration(
-                hintText: 'Title',
-                border: InputBorder.none,
+
+      body: SafeArea(
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: TextField(
+                controller: _titleController,
+                maxLines: 1,
+                style: const TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.w700,
+                ),
+                decoration: const InputDecoration(
+                  hintText: "Untitled",
+                  border: InputBorder.none,
+                ),
               ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Row(
-              children: [
-                Icon(
-                  _isShared ? Icons.home_outlined : Icons.nightlight_round,
-                  size: 18,
-                  color: Colors.grey,
-                ),
-                const SizedBox(width: 8),
-                Text(_isShared ? 'Our Room (shared)' : 'My Corner (private)'),
-                const Spacer(),
-                Switch(
-                  value: _isShared,
-                  onChanged: (value) => setState(() => _isShared = value),
-                ),
-              ],
+
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                children: [
+                  Icon(
+                    _isShared ? Icons.home_outlined : Icons.lock_outline,
+                    size: 18,
+                    color: Colors.grey,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    _isShared ? 'Shared with your partner' : 'Private note',
+                    style: TextStyle(color: Colors.grey[700]),
+                  ),
+                  const Spacer(),
+                  Switch(
+                    value: _isShared,
+                    onChanged: (v) => setState(() => _isShared = v),
+                  ),
+                ],
+              ),
             ),
-          ),
-          const Divider(height: 1),
-          quill.QuillSimpleToolbar(controller: _quillController),
-          const Divider(height: 1),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(12),
-              child: quill.QuillEditor.basic(controller: _quillController),
+
+            const Divider(height: 1),
+
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(18, 20, 18, 20),
+                child: quill.QuillEditor.basic(controller: _quillController),
+              ),
             ),
-          ),
-        ],
+
+            Material(
+              elevation: 8,
+              color: Theme.of(context).colorScheme.surface,
+              child: SafeArea(
+                top: false,
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 6,
+                  ),
+                  child: quill.QuillSimpleToolbar(controller: _quillController),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
