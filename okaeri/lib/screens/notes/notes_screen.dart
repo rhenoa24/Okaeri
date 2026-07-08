@@ -62,23 +62,6 @@ class _NotesScreenState extends State<NotesScreen>
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => NoteEditorScreen(
-                coupleId: widget.coupleId,
-                // Default to whichever tab is currently open
-                initialVisibility: _tabController.index == 0
-                    ? 'shared'
-                    : 'private:$myId',
-              ),
-            ),
-          );
-        },
-        child: const Icon(Icons.add),
-      ),
     );
   }
 }
