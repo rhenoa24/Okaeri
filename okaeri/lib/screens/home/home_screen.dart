@@ -146,7 +146,10 @@ class _HomeScreenState extends State<HomeScreen> {
               );
             },
             child: StreamBuilder<List<ScheduleItem>>(
-              stream: _calendarService.watchSchedule(widget.coupleId, limit: 3),
+              stream: _calendarService.watchUpcomingSchedule(
+                widget.coupleId,
+                limit: 3,
+              ),
               builder: (context, snapshot) {
                 if (!snapshot.hasData) {
                   return const SizedBox(

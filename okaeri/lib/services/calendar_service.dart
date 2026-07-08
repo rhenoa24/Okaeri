@@ -114,6 +114,30 @@ class CalendarService {
         );
   }
 
+  // Schedule items from today onward, across all days, soonest first.
+  // Used for the "Upcoming Plans" preview on Home and its full list screen.
+  Stream<List<ScheduleItem>> watchUpcomingSchedule(
+    String coupleId, {
+    int limit = 5,
+  }) {
+    return _scheduleRef(coupleId)
+        .where('date', isGreaterThanOrEqualTo: todayDateString())
+        .orderBy('date')
+        .orderBy('time')
+        .limit(limit)
+        .snapshots()
+        .map(
+          (snap) => snap.docs
+              .map(
+                (d) => ScheduleItem.fromMap(
+                  d.id,
+                  d.data() as Map<String, dynamic>,
+                ),
+              )
+              .toList(),
+        );
+  }
+
   Future<void> createNote({
     required String coupleId,
     required String date,

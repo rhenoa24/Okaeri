@@ -105,16 +105,16 @@ class _MessageBoardScreenState extends State<MessageBoardScreen> {
       _Entry(name: partnerName, message: _partnerMessage, isMe: false),
     ];
 
-    entries.sort((a, b) {
-      final aTime = a.message?.updatedAt;
-      final bTime = b.message?.updatedAt;
-      if (aTime == null && bTime == null) return 0;
-      if (aTime == null) return -1; // no message yet -> show higher up
-      if (bTime == null) return 1;
+    // Remove users who don't have a message yet
+    final visibleEntries = entries.where((e) => e.message != null).toList();
+
+    visibleEntries.sort((a, b) {
+      final aTime = a.message!.updatedAt;
+      final bTime = b.message!.updatedAt;
       return aTime.compareTo(bTime);
     });
 
-    return entries
+    return visibleEntries
         .map(
           (e) => MessageCard(label: e.name, message: e.message, isMe: e.isMe),
         )
@@ -127,7 +127,24 @@ class _MessageBoardScreenState extends State<MessageBoardScreen> {
       appBar: AppBar(title: const Text('Message Board')),
       body: Column(
         children: [
-          Expanded(child: ListView(children: _buildOrderedCards())),
+          Expanded(
+            child: Builder(
+              builder: (context) {
+                final cards = _buildOrderedCards();
+
+                if (cards.isEmpty) {
+                  return const Center(
+                    child: Text(
+                      'No messages yet.\nLeave one below!',
+                      textAlign: TextAlign.center,
+                    ),
+                  );
+                }
+
+                return ListView(children: cards);
+              },
+            ),
+          ),
           Padding(
             padding: const EdgeInsets.all(12),
             child: Row(
