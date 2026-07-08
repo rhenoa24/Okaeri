@@ -217,15 +217,24 @@ class _DateTile extends StatelessWidget {
           );
         },
         child: ListTile(
-          leading: Icon(Icons.star, color: Colors.amber.shade700),
+          titleAlignment: ListTileTitleAlignment.titleHeight,
+          leading: note.isImportant
+              ? Icon(Icons.favorite, color: Colors.red.shade400)
+              : null,
           title: Text(
             note.title,
             style: const TextStyle(fontWeight: FontWeight.w600),
           ),
-          subtitle: Text(
-            '${DateFormat('MMMM d').format(occurrence)}'
-            '${note.isRepeating ? ' (yearly)' : ''}'
-            '${preview.isNotEmpty ? '\n$preview' : ''}',
+          subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '${DateFormat('MMMM d').format(occurrence)}'
+                '${note.isRepeating ? ' (yearly)' : ''}',
+              ),
+              if (preview.isNotEmpty)
+                Text(preview, maxLines: 2, overflow: TextOverflow.ellipsis),
+            ],
           ),
           isThreeLine: preview.isNotEmpty,
           trailing: Text(

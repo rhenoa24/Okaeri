@@ -403,15 +403,16 @@ class _NoteTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final preview = extractPlainText(note.contentJson);
+
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: ListTile(
         onTap: onTap,
-        leading: Icon(
-          note.isImportant ? Icons.star : Icons.event_note_outlined,
-          color: note.isImportant ? Colors.amber.shade700 : Colors.grey,
-        ),
+        titleAlignment: ListTileTitleAlignment.titleHeight,
+        leading: note.isImportant
+            ? Icon(Icons.favorite_rounded, color: Colors.red.shade400)
+            : null,
         title: Text(
           note.title,
           style: const TextStyle(fontWeight: FontWeight.w600),
