@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/calendar_note.dart';
 import '../models/schedule_item.dart';
@@ -5,6 +7,13 @@ import '../models/schedule_item.dart';
 String todayDateString() {
   final now = DateTime.now();
   return '${now.year.toString().padLeft(4, '0')}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+}
+
+class CalendarData {
+  const CalendarData({required this.notes, required this.plans});
+
+  final List<CalendarNote> notes;
+  final List<ScheduleItem> plans;
 }
 
 class CalendarService {
@@ -50,6 +59,41 @@ class CalendarService {
               )
               .toList(),
         );
+  }
+
+  Stream<CalendarData> watchCalendarData(String coupleId) {
+    return Stream.multi((controller) {
+      List<CalendarNote> notes = [];
+      List<ScheduleItem> plans = [];
+      bool hasNotes = false;
+      bool hasPlans = false;
+
+      void emitIfReady() {
+        if (hasNotes && hasPlans) {
+          controller.add(CalendarData(notes: notes, plans: plans));
+        }
+      }
+
+      late final StreamSubscription<List<CalendarNote>> notesSub;
+      late final StreamSubscription<List<ScheduleItem>> plansSub;
+
+      notesSub = watchAllNotes(coupleId).listen((value) {
+        notes = value;
+        hasNotes = true;
+        emitIfReady();
+      }, onError: controller.addError);
+
+      plansSub = watchSchedule(coupleId, limit: 1000).listen((value) {
+        plans = value;
+        hasPlans = true;
+        emitIfReady();
+      }, onError: controller.addError);
+
+      controller.onCancel = () async {
+        await notesSub.cancel();
+        await plansSub.cancel();
+      };
+    });
   }
 
   Stream<List<ScheduleItem>> watchSchedule(String coupleId, {int limit = 50}) {

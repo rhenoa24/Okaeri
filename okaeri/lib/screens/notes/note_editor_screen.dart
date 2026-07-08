@@ -152,7 +152,6 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: TextField(
                 controller: _titleController,
-                maxLines: 1,
                 style: const TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.w700,

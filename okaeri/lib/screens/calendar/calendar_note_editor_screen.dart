@@ -179,11 +179,11 @@ class _CalendarNoteEditorScreenState extends State<CalendarNoteEditorScreen> {
               child: TextField(
                 controller: _titleController,
                 style: const TextStyle(
-                  fontSize: 20,
+                  fontSize: 28,
                   fontWeight: FontWeight.bold,
                 ),
                 decoration: const InputDecoration(
-                  hintText: 'Title',
+                  hintText: 'Untitled',
                   border: InputBorder.none,
                 ),
               ),

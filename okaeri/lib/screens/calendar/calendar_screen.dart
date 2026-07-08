@@ -13,6 +13,44 @@ import 'calendar_note_editor_screen.dart';
 String _formatDate(DateTime d) =>
     '${d.year.toString().padLeft(4, '0')}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
 
+enum CalendarMarkerType { importantDate, normalNote, schedule }
+
+class CalendarMarker {
+  const CalendarMarker(this.type);
+  final CalendarMarkerType type;
+}
+
+List<CalendarMarker> buildCalendarDayMarkers({
+  required DateTime day,
+  required List<CalendarNote> notes,
+  required List<ScheduleItem> plans,
+}) {
+  final dayStr = _formatDate(day);
+  final monthDay = dayStr.substring(5);
+
+  final noteMarkers = notes
+      .where(
+        (note) =>
+            note.date == dayStr ||
+            (note.isRepeating && note.monthDay == monthDay),
+      )
+      .map(
+        (note) => CalendarMarker(
+          note.isImportant
+              ? CalendarMarkerType.importantDate
+              : CalendarMarkerType.normalNote,
+        ),
+      )
+      .toList();
+
+  final planMarkers = plans
+      .where((plan) => plan.date == dayStr)
+      .map((_) => CalendarMarker(CalendarMarkerType.schedule))
+      .toList();
+
+  return [...noteMarkers, ...planMarkers];
+}
+
 class CalendarScreen extends StatefulWidget {
   final String coupleId;
   const CalendarScreen({super.key, required this.coupleId});
@@ -50,6 +88,11 @@ class _CalendarScreenState extends State<CalendarScreen> {
           (n) => n.date == dayStr || (n.isRepeating && n.monthDay == monthDay),
         )
         .toList();
+  }
+
+  List<ScheduleItem> _plansForDay(DateTime day, List<ScheduleItem> allPlans) {
+    final dayStr = _formatDate(day);
+    return allPlans.where((item) => item.date == dayStr).toList();
   }
 
   void _openNoteEditor({CalendarNote? existing}) {
@@ -104,15 +147,22 @@ class _CalendarScreenState extends State<CalendarScreen> {
             ),
         ],
       ),
-      body: StreamBuilder<List<CalendarNote>>(
-        stream: _calendarService.watchAllNotes(widget.coupleId),
-        builder: (context, notesSnapshot) {
-          final allNotes = notesSnapshot.data ?? [];
+      body: StreamBuilder<CalendarData>(
+        stream: _calendarService.watchCalendarData(widget.coupleId),
+        builder: (context, calendarSnapshot) {
+          if (!calendarSnapshot.hasData) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          final calendarData = calendarSnapshot.data!;
+          final allNotes = calendarData.notes;
+          final allPlans = calendarData.plans;
           final selectedNotes = _notesForDay(_selectedDay, allNotes);
+          final selectedPlans = _plansForDay(_selectedDay, allPlans);
 
           return Column(
             children: [
-              TableCalendar<CalendarNote>(
+              TableCalendar<CalendarMarker>(
                 firstDay: DateTime.utc(2015, 1, 1),
                 lastDay: DateTime.utc(2045, 12, 31),
                 focusedDay: _focusedDay,
@@ -128,7 +178,37 @@ class _CalendarScreenState extends State<CalendarScreen> {
                     _focusedDay = focusedDay;
                   });
                 },
-                eventLoader: (day) => _notesForDay(day, allNotes),
+                eventLoader: (day) => buildCalendarDayMarkers(
+                  day: day,
+                  notes: allNotes,
+                  plans: allPlans,
+                ),
+                calendarBuilders: CalendarBuilders(
+                  markerBuilder: (context, day, markers) {
+                    if (markers.isEmpty) return null;
+                    final markerItems = markers.cast<CalendarMarker>();
+                    return Positioned(
+                      bottom: 2,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: markerItems.map((marker) {
+                          final symbol = switch (marker.type) {
+                            CalendarMarkerType.importantDate => '❤️',
+                            CalendarMarkerType.normalNote => '🔵',
+                            CalendarMarkerType.schedule => '🕒',
+                          };
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 1),
+                            child: Text(
+                              symbol,
+                              style: const TextStyle(fontSize: 10),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    );
+                  },
+                ),
                 calendarStyle: CalendarStyle(
                   markerDecoration: BoxDecoration(
                     color: Theme.of(context).colorScheme.primary,
@@ -177,37 +257,20 @@ class _CalendarScreenState extends State<CalendarScreen> {
                       onAdd: () => _showAddScheduleSheet(),
                     ),
                     const SizedBox(height: 8),
-                    StreamBuilder<List<ScheduleItem>>(
-                      stream: _calendarService.watchScheduleForDate(
-                        widget.coupleId,
-                        _formatDate(_selectedDay),
+                    if (selectedPlans.isEmpty)
+                      const _EmptyHint(text: 'No plans for this day yet.')
+                    else
+                      Column(
+                        children: selectedPlans
+                            .map(
+                              (item) => _ScheduleRow(
+                                item: item,
+                                onTap: () =>
+                                    _showAddScheduleSheet(existing: item),
+                              ),
+                            )
+                            .toList(),
                       ),
-                      builder: (context, scheduleSnapshot) {
-                        final items = scheduleSnapshot.data ?? [];
-                        if (!scheduleSnapshot.hasData) {
-                          return const Padding(
-                            padding: EdgeInsets.symmetric(vertical: 12),
-                            child: Center(child: CircularProgressIndicator()),
-                          );
-                        }
-                        if (items.isEmpty) {
-                          return const _EmptyHint(
-                            text: 'No plans for this day yet.',
-                          );
-                        }
-                        return Column(
-                          children: items
-                              .map(
-                                (item) => _ScheduleRow(
-                                  item: item,
-                                  onTap: () =>
-                                      _showAddScheduleSheet(existing: item),
-                                ),
-                              )
-                              .toList(),
-                        );
-                      },
-                    ),
                   ],
                 ),
               ),

@@ -4,6 +4,7 @@ import '../screens/home/home_screen.dart';
 import '../screens/notes/notes_screen.dart';
 import '../screens/notes/note_editor_screen.dart';
 import '../screens/calendar/calendar_screen.dart';
+import '../screens/calendar/calendar_note_editor_screen.dart';
 import '../screens/more/more_screen.dart';
 
 class AppShell extends StatefulWidget {
@@ -42,9 +43,7 @@ class _AppShellState extends State<AppShell> {
               ListTile(
                 leading: const Icon(Icons.note_add_outlined),
                 title: const Text('New Note'),
-                subtitle: const Text(
-                  'Write something for Our Room or My Corner',
-                ),
+                subtitle: const Text('Capture thoughts, ideas, or memories.'),
                 onTap: () {
                   Navigator.pop(context);
                   Navigator.push(
@@ -60,12 +59,41 @@ class _AppShellState extends State<AppShell> {
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.event_available_outlined),
-                title: const Text('New Date'),
-                subtitle: const Text('Plan something on the calendar'),
+                leading: const Icon(Icons.favorite_outline),
+                title: const Text('New Event'),
+                subtitle: const Text('Remember special dates and moments.'),
                 onTap: () {
                   Navigator.pop(context);
-                  setState(() => _selectedIndex = 2); // jump to Calendar tab
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => CalendarNoteEditorScreen(
+                        coupleId: widget.coupleId,
+                        initialDate: DateTime.now(),
+                      ),
+                    ),
+                  );
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.alarm),
+                title: const Text('New Plan'),
+                subtitle: const Text(
+                  'Organize dates, activities, and schedules.',
+                ),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => Scaffold(
+                        appBar: AppBar(title: const Text('New Plan')),
+                        body: const Center(
+                          child: Text('Plan editor coming soon'),
+                        ),
+                      ),
+                    ),
+                  );
                 },
               ),
               const SizedBox(height: 8),
