@@ -195,24 +195,30 @@ class _CalendarNoteEditorScreenState extends State<CalendarNoteEditorScreen> {
               child: ExpansionTile(
                 tilePadding: const EdgeInsets.symmetric(horizontal: 16),
                 initiallyExpanded: false,
-                title: Row(
-                  children: [
-                    GestureDetector(
-                      onTap: _pickDate,
-                      child: const Icon(
-                        Icons.edit_calendar_outlined,
-                        size: 18,
-                        color: Colors.grey,
-                      ),
+                title: InkWell(
+                  onTap: _pickDate,
+                  borderRadius: BorderRadius.circular(4),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Icons.edit_calendar_outlined,
+                          size: 18,
+                          color: Colors.grey,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            DateFormat(
+                              'EEEE, MMMM d, yyyy',
+                            ).format(_selectedDate),
+                            style: const TextStyle(fontSize: 14),
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        DateFormat('EEEE, MMMM d, yyyy').format(_selectedDate),
-                        style: const TextStyle(fontSize: 14),
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
                 children: [
                   SwitchListTile(
