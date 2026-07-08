@@ -5,6 +5,8 @@ import 'package:intl/intl.dart';
 import '../../models/calendar_note.dart';
 import '../../models/schedule_item.dart';
 import '../../services/calendar_service.dart';
+import 'important_dates_screen.dart';
+import 'upcoming_plans_screen.dart';
 
 String _formatDate(DateTime d) =>
     '${d.year.toString().padLeft(4, '0')}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
@@ -30,6 +32,14 @@ class _CalendarScreenState extends State<CalendarScreen> {
     myId = FirebaseAuth.instance.currentUser!.uid;
   }
 
+  void _jumpToToday() {
+    final now = DateTime.now();
+    setState(() {
+      _focusedDay = now;
+      _selectedDay = now;
+    });
+  }
+
   List<CalendarNote> _notesForDay(DateTime day, List<CalendarNote> allNotes) {
     final dayStr = _formatDate(day);
     final monthDay = dayStr.substring(5);
@@ -43,7 +53,42 @@ class _CalendarScreenState extends State<CalendarScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Calendar')),
+      appBar: AppBar(
+        title: const Text('Calendar'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.star_outline),
+            tooltip: 'Important Dates',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) =>
+                      ImportantDatesScreen(coupleId: widget.coupleId),
+                ),
+              );
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.event_note_outlined),
+            tooltip: 'Upcoming Plans',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) =>
+                      UpcomingPlansScreen(coupleId: widget.coupleId),
+                ),
+              );
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.today_outlined),
+            tooltip: 'Jump to Today',
+            onPressed: _jumpToToday,
+          ),
+        ],
+      ),
       body: StreamBuilder<List<CalendarNote>>(
         stream: _calendarService.watchAllNotes(widget.coupleId),
         builder: (context, notesSnapshot) {
@@ -90,15 +135,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 child: ListView(
                   padding: const EdgeInsets.all(16),
                   children: [
-                    Text(
-                      DateFormat('EEEE, MMMM d, yyyy').format(_selectedDay),
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-
                     _SectionHeader(
                       title: 'Notes & Important Dates',
                       onAdd: () => _showAddNoteSheet(),
