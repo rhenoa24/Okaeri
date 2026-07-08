@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../screens/home/home_screen.dart';
 import '../screens/notes/notes_screen.dart';
 import '../screens/notes/note_editor_screen.dart';
@@ -64,9 +65,7 @@ class _AppShellState extends State<AppShell> {
                 subtitle: const Text('Plan something on the calendar'),
                 onTap: () {
                   Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('New Date — coming soon!')),
-                  );
+                  setState(() => _selectedIndex = 2); // jump to Calendar tab
                 },
               ),
               const SizedBox(height: 8),
