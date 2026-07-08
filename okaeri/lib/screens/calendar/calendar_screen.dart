@@ -5,8 +5,10 @@ import 'package:intl/intl.dart';
 import '../../models/calendar_note.dart';
 import '../../models/schedule_item.dart';
 import '../../services/calendar_service.dart';
+import '../../utils/quill_text.dart';
 import 'important_dates_screen.dart';
 import 'upcoming_plans_screen.dart';
+import 'calendar_note_editor_screen.dart';
 
 String _formatDate(DateTime d) =>
     '${d.year.toString().padLeft(4, '0')}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
@@ -48,6 +50,19 @@ class _CalendarScreenState extends State<CalendarScreen> {
           (n) => n.date == dayStr || (n.isRepeating && n.monthDay == monthDay),
         )
         .toList();
+  }
+
+  void _openNoteEditor({CalendarNote? existing}) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => CalendarNoteEditorScreen(
+          coupleId: widget.coupleId,
+          initialDate: _selectedDay,
+          existingNote: existing,
+        ),
+      ),
+    );
   }
 
   @override
@@ -136,17 +151,17 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   padding: const EdgeInsets.all(16),
                   children: [
                     _SectionHeader(
-                      title: 'Notes & Important Dates',
-                      onAdd: () => _showAddNoteSheet(),
+                      title: 'Events',
+                      onAdd: () => _openNoteEditor(),
                     ),
                     const SizedBox(height: 8),
                     if (selectedNotes.isEmpty)
-                      const _EmptyHint(text: 'No notes for this day yet.')
+                      const _EmptyHint(text: 'No events for this day yet.')
                     else
                       ...selectedNotes.map(
                         (n) => _NoteTile(
                           note: n,
-                          onTap: () => _showAddNoteSheet(existing: n),
+                          onTap: () => _openNoteEditor(existing: n),
                         ),
                       ),
 
@@ -198,134 +213,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
     );
   }
 
-  // ---------- Add / Edit Note sheet ----------
-
-  void _showAddNoteSheet({CalendarNote? existing}) {
-    final titleController = TextEditingController(text: existing?.title ?? '');
-    final noteController = TextEditingController(text: existing?.note ?? '');
-    bool isRepeating = existing?.isRepeating ?? false;
-    bool isImportant = existing?.isImportant ?? false;
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setSheetState) {
-            return Padding(
-              padding: EdgeInsets.only(
-                left: 20,
-                right: 20,
-                top: 20,
-                bottom: MediaQuery.of(context).viewInsets.bottom + 20,
-              ),
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Text(
-                      existing == null ? 'New Note' : 'Edit Note',
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    TextField(
-                      controller: titleController,
-                      decoration: const InputDecoration(
-                        labelText: 'Title (e.g. Ranjo\'s Birthday)',
-                        border: OutlineInputBorder(),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    TextField(
-                      controller: noteController,
-                      maxLines: 3,
-                      decoration: const InputDecoration(
-                        labelText: 'Note (optional)',
-                        border: OutlineInputBorder(),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    SwitchListTile(
-                      contentPadding: EdgeInsets.zero,
-                      title: const Text('Repeats every year'),
-                      subtitle: const Text(
-                        'Good for birthdays & anniversaries',
-                      ),
-                      value: isRepeating,
-                      onChanged: (v) => setSheetState(() => isRepeating = v),
-                    ),
-                    SwitchListTile(
-                      contentPadding: EdgeInsets.zero,
-                      title: const Text('Mark as important'),
-                      subtitle: const Text('Shows up on the Home dashboard'),
-                      value: isImportant,
-                      onChanged: (v) => setSheetState(() => isImportant = v),
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        if (existing != null)
-                          TextButton(
-                            onPressed: () async {
-                              await _calendarService.deleteNote(
-                                widget.coupleId,
-                                existing.id,
-                              );
-                              if (context.mounted) Navigator.pop(context);
-                            },
-                            style: TextButton.styleFrom(
-                              foregroundColor: Colors.red,
-                            ),
-                            child: const Text('Delete'),
-                          ),
-                        const Spacer(),
-                        FilledButton(
-                          onPressed: () async {
-                            if (titleController.text.trim().isEmpty) return;
-                            if (existing == null) {
-                              await _calendarService.createNote(
-                                coupleId: widget.coupleId,
-                                date: _formatDate(_selectedDay),
-                                title: titleController.text.trim(),
-                                note: noteController.text.trim(),
-                                isRepeating: isRepeating,
-                                isImportant: isImportant,
-                                createdBy: myId,
-                              );
-                            } else {
-                              await _calendarService.updateNote(
-                                coupleId: widget.coupleId,
-                                noteId: existing.id,
-                                date: existing.date,
-                                title: titleController.text.trim(),
-                                note: noteController.text.trim(),
-                                isRepeating: isRepeating,
-                                isImportant: isImportant,
-                              );
-                            }
-                            if (context.mounted) Navigator.pop(context);
-                          },
-                          child: const Text('Save'),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
-
-  // ---------- Add / Edit Schedule sheet ----------
+  // ---------- Add / Edit Schedule sheet (unchanged — still a quick bottom sheet) ----------
 
   void _showAddScheduleSheet({ScheduleItem? existing}) {
     final textController = TextEditingController(text: existing?.text ?? '');
@@ -515,6 +403,7 @@ class _NoteTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final preview = extractPlainText(note.contentJson);
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -528,7 +417,9 @@ class _NoteTile extends StatelessWidget {
           note.title,
           style: const TextStyle(fontWeight: FontWeight.w600),
         ),
-        subtitle: note.note.isEmpty ? null : Text(note.note),
+        subtitle: preview.isEmpty
+            ? null
+            : Text(preview, maxLines: 2, overflow: TextOverflow.ellipsis),
         trailing: note.isRepeating
             ? const Icon(Icons.repeat, size: 18, color: Colors.grey)
             : null,

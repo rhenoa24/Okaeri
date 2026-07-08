@@ -80,7 +80,7 @@ class CalendarService {
     required String coupleId,
     required String date,
     required String title,
-    required String note,
+    required String contentJson,
     required bool isRepeating,
     required bool isImportant,
     required String createdBy,
@@ -88,7 +88,7 @@ class CalendarService {
     await _notesRef(coupleId).add({
       'date': date,
       'title': title,
-      'note': note,
+      'contentJson': contentJson,
       'isRepeating': isRepeating,
       'isImportant': isImportant,
       'createdBy': createdBy,
@@ -101,14 +101,14 @@ class CalendarService {
     required String noteId,
     required String date,
     required String title,
-    required String note,
+    required String contentJson,
     required bool isRepeating,
     required bool isImportant,
   }) async {
     await _notesRef(coupleId).doc(noteId).update({
       'date': date,
       'title': title,
-      'note': note,
+      'contentJson': contentJson,
       'isRepeating': isRepeating,
       'isImportant': isImportant,
     });

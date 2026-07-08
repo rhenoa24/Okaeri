@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../models/calendar_note.dart';
 import '../../services/calendar_service.dart';
+import '../../utils/quill_text.dart';
 
 String _daysUntilLabel(DateTime target, DateTime from) {
   final t = DateTime(target.year, target.month, target.day);
@@ -119,6 +120,7 @@ class _DateTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final preview = extractPlainText(note.contentJson);
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -131,9 +133,9 @@ class _DateTile extends StatelessWidget {
         subtitle: Text(
           '${DateFormat('MMMM d').format(occurrence)}'
           '${note.isRepeating ? ' (yearly)' : ''}'
-          '${note.note.isNotEmpty ? '\n${note.note}' : ''}',
+          '${preview.isNotEmpty ? '\n$preview' : ''}',
         ),
-        isThreeLine: note.note.isNotEmpty,
+        isThreeLine: preview.isNotEmpty,
         trailing: Text(
           _daysUntilLabel(occurrence, now),
           style: TextStyle(

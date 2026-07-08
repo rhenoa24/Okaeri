@@ -4,7 +4,7 @@ class CalendarNote {
   final String id;
   final String date; // 'YYYY-MM-DD'
   final String title;
-  final String note;
+  final String contentJson;
   final bool isRepeating; // yearly repeat (birthdays, anniversaries)
   final bool isImportant;
   final String createdBy;
@@ -14,7 +14,7 @@ class CalendarNote {
     required this.id,
     required this.date,
     required this.title,
-    required this.note,
+    required this.contentJson,
     required this.isRepeating,
     required this.isImportant,
     required this.createdBy,
@@ -48,7 +48,7 @@ class CalendarNote {
       id: id,
       date: map['date'] ?? '',
       title: map['title'] ?? '',
-      note: map['note'] ?? '',
+      contentJson: map['contentJson'] ?? '',
       isRepeating: map['isRepeating'] ?? false,
       isImportant: map['isImportant'] ?? false,
       createdBy: map['createdBy'] ?? '',
@@ -60,7 +60,7 @@ class CalendarNote {
     return {
       'date': date,
       'title': title,
-      'note': note,
+      'contentJson': contentJson,
       'isRepeating': isRepeating,
       'isImportant': isImportant,
       'createdBy': createdBy,
