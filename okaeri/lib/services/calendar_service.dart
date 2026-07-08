@@ -52,14 +52,8 @@ class CalendarService {
         );
   }
 
-  // Schedule items from today onward, across all days, soonest first.
-  // Used for the "Upcoming Plans" preview on Home and its full list screen.
-  Stream<List<ScheduleItem>> watchUpcomingSchedule(
-    String coupleId, {
-    int limit = 5,
-  }) {
+  Stream<List<ScheduleItem>> watchSchedule(String coupleId, {int limit = 50}) {
     return _scheduleRef(coupleId)
-        .where('date', isGreaterThanOrEqualTo: todayDateString())
         .orderBy('date')
         .orderBy('time')
         .limit(limit)

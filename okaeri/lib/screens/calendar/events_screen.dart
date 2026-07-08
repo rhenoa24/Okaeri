@@ -229,7 +229,7 @@ class _DateTile extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                '${DateFormat('MMMM d').format(occurrence)}'
+                '${DateFormat('MMMM d, yyyy').format(occurrence)}'
                 '${note.isRepeating ? ' (yearly)' : ''}',
               ),
               if (preview.isNotEmpty)

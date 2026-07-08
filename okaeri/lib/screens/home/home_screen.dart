@@ -11,7 +11,7 @@ import '../../services/user_service.dart';
 import '../../services/calendar_service.dart';
 import '../message_board/message_board_screen.dart';
 import '../calendar/events_screen.dart';
-import '../calendar/upcoming_plans_screen.dart';
+import '../calendar/plans_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final String coupleId;
@@ -135,22 +135,18 @@ class _HomeScreenState extends State<HomeScreen> {
           const SizedBox(height: 16),
 
           _SectionCard(
-            icon: Icons.event_note_outlined,
+            icon: Icons.alarm,
             title: 'Upcoming Plans',
             onTap: () {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) =>
-                      UpcomingPlansScreen(coupleId: widget.coupleId),
+                  builder: (_) => PlansScreen(coupleId: widget.coupleId),
                 ),
               );
             },
             child: StreamBuilder<List<ScheduleItem>>(
-              stream: _calendarService.watchUpcomingSchedule(
-                widget.coupleId,
-                limit: 3,
-              ),
+              stream: _calendarService.watchSchedule(widget.coupleId, limit: 3),
               builder: (context, snapshot) {
                 if (!snapshot.hasData) {
                   return const SizedBox(
@@ -180,7 +176,7 @@ class _HomeScreenState extends State<HomeScreen> {
           const SizedBox(height: 16),
 
           _SectionCard(
-            icon: Icons.star_border,
+            icon: Icons.favorite_border,
             title: 'Important Dates',
             onTap: () {
               Navigator.push(
@@ -218,7 +214,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
                 if (upcoming.isEmpty) {
                   return const _EmptyState(
-                    text: 'No important dates marked yet ⭐',
+                    text: 'No important dates marked yet',
                   );
                 }
 
@@ -383,7 +379,6 @@ class _ImportantDatePreviewRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         children: [
-          Icon(Icons.star, size: 14, color: Colors.amber.shade700),
           const SizedBox(width: 6),
           Expanded(
             child: Text(

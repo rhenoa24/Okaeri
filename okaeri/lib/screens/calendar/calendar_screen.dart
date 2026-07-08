@@ -7,7 +7,7 @@ import '../../models/schedule_item.dart';
 import '../../services/calendar_service.dart';
 import '../../utils/quill_text.dart';
 import 'events_screen.dart';
-import 'upcoming_plans_screen.dart';
+import 'plans_screen.dart';
 import 'calendar_note_editor_screen.dart';
 
 String _formatDate(DateTime d) =>
@@ -72,7 +72,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
         title: const Text('Calendar'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.star_outline),
+            icon: const Icon(Icons.favorite_outline),
             tooltip: 'Important Dates',
             onPressed: () {
               Navigator.push(
@@ -84,23 +84,24 @@ class _CalendarScreenState extends State<CalendarScreen> {
             },
           ),
           IconButton(
-            icon: const Icon(Icons.event_note_outlined),
+            icon: const Icon(Icons.alarm),
             tooltip: 'Upcoming Plans',
             onPressed: () {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) =>
-                      UpcomingPlansScreen(coupleId: widget.coupleId),
+                  builder: (_) => PlansScreen(coupleId: widget.coupleId),
                 ),
               );
             },
           ),
-          IconButton(
-            icon: const Icon(Icons.today_outlined),
-            tooltip: 'Jump to Today',
-            onPressed: _jumpToToday,
-          ),
+          if (!(_focusedDay.year == DateTime.now().year &&
+              _focusedDay.month == DateTime.now().month))
+            IconButton(
+              icon: const Icon(Icons.today_outlined),
+              tooltip: 'Jump to Today',
+              onPressed: _jumpToToday,
+            ),
         ],
       ),
       body: StreamBuilder<List<CalendarNote>>(
@@ -120,6 +121,11 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   setState(() {
                     _selectedDay = selected;
                     _focusedDay = focused;
+                  });
+                },
+                onPageChanged: (focusedDay) {
+                  setState(() {
+                    _focusedDay = focusedDay;
                   });
                 },
                 eventLoader: (day) => _notesForDay(day, allNotes),
@@ -167,7 +173,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                     const SizedBox(height: 28),
 
                     _SectionHeader(
-                      title: 'Schedule',
+                      title: 'Plans',
                       onAdd: () => _showAddScheduleSheet(),
                     ),
                     const SizedBox(height: 8),
@@ -186,7 +192,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                         }
                         if (items.isEmpty) {
                           return const _EmptyHint(
-                            text: 'No schedule for this day yet.',
+                            text: 'No plans for this day yet.',
                           );
                         }
                         return Column(
