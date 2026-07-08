@@ -2,10 +2,16 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
 import '../../models/message.dart';
+import '../../models/calendar_note.dart';
+import '../../models/schedule_item.dart';
 import '../../services/message_service.dart';
 import '../../services/user_service.dart';
+import '../../services/calendar_service.dart';
 import '../message_board/message_board_screen.dart';
+import '../calendar/important_dates_screen.dart';
+import '../calendar/upcoming_plans_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final String coupleId;
@@ -18,6 +24,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final MessageService _messageService = MessageService();
   final UserService _userService = UserService();
+  final CalendarService _calendarService = CalendarService();
 
   late final String myId;
   String myName = '';
@@ -127,20 +134,108 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           const SizedBox(height: 16),
 
-          const _SectionCard(
+          _SectionCard(
             icon: Icons.event_note_outlined,
             title: 'Upcoming Plans',
-            child: _EmptyState(
-              text: 'Your planned dates will show up here soon 📅',
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) =>
+                      UpcomingPlansScreen(coupleId: widget.coupleId),
+                ),
+              );
+            },
+            child: StreamBuilder<List<ScheduleItem>>(
+              stream: _calendarService.watchUpcomingSchedule(
+                widget.coupleId,
+                limit: 3,
+              ),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return const SizedBox(
+                    height: 24,
+                    child: Center(
+                      child: SizedBox(
+                        height: 16,
+                        width: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
+                    ),
+                  );
+                }
+                final items = snapshot.data!;
+                if (items.isEmpty) {
+                  return const _EmptyState(text: 'Nothing planned yet 📅');
+                }
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: items
+                      .map((item) => _PlanPreviewRow(item: item))
+                      .toList(),
+                );
+              },
             ),
           ),
           const SizedBox(height: 16),
 
-          const _SectionCard(
+          _SectionCard(
             icon: Icons.star_border,
             title: 'Important Dates',
-            child: _EmptyState(
-              text: 'Pinned & important dates will show up here ⭐',
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) =>
+                      ImportantDatesScreen(coupleId: widget.coupleId),
+                ),
+              );
+            },
+            child: StreamBuilder<List<CalendarNote>>(
+              stream: _calendarService.watchAllNotes(widget.coupleId),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return const SizedBox(
+                    height: 24,
+                    child: Center(
+                      child: SizedBox(
+                        height: 16,
+                        width: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
+                    ),
+                  );
+                }
+                final now = DateTime.now();
+                final today = DateTime(now.year, now.month, now.day);
+
+                final upcoming =
+                    snapshot.data!
+                        .where((n) => n.isImportant)
+                        .map((n) => (note: n, next: n.nextOccurrence(now)))
+                        .where((e) => !e.next.isBefore(today))
+                        .toList()
+                      ..sort((a, b) => a.next.compareTo(b.next));
+
+                if (upcoming.isEmpty) {
+                  return const _EmptyState(
+                    text: 'No important dates marked yet ⭐',
+                  );
+                }
+
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: upcoming
+                      .take(3)
+                      .map(
+                        (e) => _ImportantDatePreviewRow(
+                          note: e.note,
+                          occurrence: e.next,
+                        ),
+                      )
+                      .toList(),
+                );
+              },
             ),
           ),
         ],
@@ -229,6 +324,83 @@ class _LatestMessagePreview extends StatelessWidget {
           style: const TextStyle(fontSize: 15),
         ),
       ],
+    );
+  }
+}
+
+class _PlanPreviewRow extends StatelessWidget {
+  final ScheduleItem item;
+  const _PlanPreviewRow({required this.item});
+
+  String get _displayTime {
+    final hour = int.parse(item.time.split(':')[0]);
+    final minute = item.time.split(':')[1];
+    final period = hour >= 12 ? 'PM' : 'AM';
+    final hour12 = hour % 12 == 0 ? 12 : hour % 12;
+    return '$hour12:$minute $period';
+  }
+
+  DateTime get _date {
+    final parts = item.date.split('-').map(int.parse).toList();
+    return DateTime(parts[0], parts[1], parts[2]);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              item.text,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(fontSize: 14),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            '${DateFormat('MMM d').format(_date)}, $_displayTime',
+            style: const TextStyle(fontSize: 12, color: Colors.grey),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ImportantDatePreviewRow extends StatelessWidget {
+  final CalendarNote note;
+  final DateTime occurrence;
+  const _ImportantDatePreviewRow({
+    required this.note,
+    required this.occurrence,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        children: [
+          Icon(Icons.star, size: 14, color: Colors.amber.shade700),
+          const SizedBox(width: 6),
+          Expanded(
+            child: Text(
+              note.title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(fontSize: 14),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            DateFormat('MMM d').format(occurrence),
+            style: const TextStyle(fontSize: 12, color: Colors.grey),
+          ),
+        ],
+      ),
     );
   }
 }

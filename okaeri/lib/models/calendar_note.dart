@@ -24,6 +24,25 @@ class CalendarNote {
   // 'MM-DD' portion, used to match repeating events across different years
   String get monthDay => date.length >= 10 ? date.substring(5) : '';
 
+  DateTime get parsedDate {
+    final parts = date.split('-').map(int.parse).toList();
+    return DateTime(parts[0], parts[1], parts[2]);
+  }
+
+  // Next time this date "happens" on or after [from]. For non-repeating
+  // notes, this is just the stored date (even if it's in the past).
+  // For repeating notes, rolls forward to this year or next year's MM-DD.
+  DateTime nextOccurrence(DateTime from) {
+    final d = parsedDate;
+    if (!isRepeating) return d;
+    final fromDateOnly = DateTime(from.year, from.month, from.day);
+    var candidate = DateTime(from.year, d.month, d.day);
+    if (candidate.isBefore(fromDateOnly)) {
+      candidate = DateTime(from.year + 1, d.month, d.day);
+    }
+    return candidate;
+  }
+
   factory CalendarNote.fromMap(String id, Map<String, dynamic> map) {
     return CalendarNote(
       id: id,

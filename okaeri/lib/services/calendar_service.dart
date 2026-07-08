@@ -2,6 +2,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/calendar_note.dart';
 import '../models/schedule_item.dart';
 
+String todayDateString() {
+  final now = DateTime.now();
+  return '${now.year.toString().padLeft(4, '0')}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+}
+
 class CalendarService {
   CollectionReference _notesRef(String coupleId) => FirebaseFirestore.instance
       .collection('couples')
@@ -16,7 +21,7 @@ class CalendarService {
 
   // Fetch ALL notes for this couple. At a 2-person scale this collection
   // stays tiny, so filtering by date (including yearly repeats) happens
-  // client-side in the screen rather than via complex Firestore queries.
+  // client-side in the screens rather than via complex Firestore queries.
   Stream<List<CalendarNote>> watchAllNotes(String coupleId) {
     return _notesRef(coupleId).snapshots().map(
       (snap) => snap.docs
@@ -34,6 +39,30 @@ class CalendarService {
     return _scheduleRef(coupleId)
         .where('date', isEqualTo: date)
         .orderBy('time')
+        .snapshots()
+        .map(
+          (snap) => snap.docs
+              .map(
+                (d) => ScheduleItem.fromMap(
+                  d.id,
+                  d.data() as Map<String, dynamic>,
+                ),
+              )
+              .toList(),
+        );
+  }
+
+  // Schedule items from today onward, across all days, soonest first.
+  // Used for the "Upcoming Plans" preview on Home and its full list screen.
+  Stream<List<ScheduleItem>> watchUpcomingSchedule(
+    String coupleId, {
+    int limit = 5,
+  }) {
+    return _scheduleRef(coupleId)
+        .where('date', isGreaterThanOrEqualTo: todayDateString())
+        .orderBy('date')
+        .orderBy('time')
+        .limit(limit)
         .snapshots()
         .map(
           (snap) => snap.docs
