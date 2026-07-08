@@ -145,31 +145,34 @@ class _MessageBoardScreenState extends State<MessageBoardScreen> {
               },
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.all(12),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _controller,
-                    decoration: InputDecoration(
-                      hintText: 'Leave a message...',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(24),
+          SafeArea(
+            top: false,
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _controller,
+                      decoration: InputDecoration(
+                        hintText: 'Leave a message...',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(24),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                        ),
                       ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                      ),
+                      onSubmitted: (_) => _sendMessage(),
                     ),
-                    onSubmitted: (_) => _sendMessage(),
                   ),
-                ),
-                const SizedBox(width: 8),
-                IconButton.filled(
-                  onPressed: _sendMessage,
-                  icon: const Icon(Icons.send),
-                ),
-              ],
+                  const SizedBox(width: 8),
+                  IconButton.filled(
+                    onPressed: _sendMessage,
+                    icon: const Icon(Icons.send),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
