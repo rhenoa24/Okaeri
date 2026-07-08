@@ -10,7 +10,7 @@ import '../../services/message_service.dart';
 import '../../services/user_service.dart';
 import '../../services/calendar_service.dart';
 import '../message_board/message_board_screen.dart';
-import '../calendar/important_dates_screen.dart';
+import '../calendar/events_screen.dart';
 import '../calendar/upcoming_plans_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -186,8 +186,7 @@ class _HomeScreenState extends State<HomeScreen> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) =>
-                      ImportantDatesScreen(coupleId: widget.coupleId),
+                  builder: (_) => EventsScreen(coupleId: widget.coupleId),
                 ),
               );
             },

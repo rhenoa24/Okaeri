@@ -6,7 +6,7 @@ import '../../models/calendar_note.dart';
 import '../../models/schedule_item.dart';
 import '../../services/calendar_service.dart';
 import '../../utils/quill_text.dart';
-import 'important_dates_screen.dart';
+import 'events_screen.dart';
 import 'upcoming_plans_screen.dart';
 import 'calendar_note_editor_screen.dart';
 
@@ -78,8 +78,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) =>
-                      ImportantDatesScreen(coupleId: widget.coupleId),
+                  builder: (_) => EventsScreen(coupleId: widget.coupleId),
                 ),
               );
             },

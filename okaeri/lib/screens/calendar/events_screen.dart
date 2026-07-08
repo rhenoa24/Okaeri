@@ -16,15 +16,15 @@ String _daysUntilLabel(DateTime target, DateTime from) {
   return '${-diff} days ago';
 }
 
-class ImportantDatesScreen extends StatefulWidget {
+class EventsScreen extends StatefulWidget {
   final String coupleId;
-  const ImportantDatesScreen({super.key, required this.coupleId});
+  const EventsScreen({super.key, required this.coupleId});
 
   @override
-  State<ImportantDatesScreen> createState() => _ImportantDatesScreenState();
+  State<EventsScreen> createState() => _EventsScreenState();
 }
 
-class _ImportantDatesScreenState extends State<ImportantDatesScreen>
+class _EventsScreenState extends State<EventsScreen>
     with SingleTickerProviderStateMixin {
   late final TabController _tabController;
 
