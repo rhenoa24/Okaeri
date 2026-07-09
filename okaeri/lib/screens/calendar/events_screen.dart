@@ -201,7 +201,6 @@ class _DateTile extends StatelessWidget {
     final preview = extractPlainText(note.contentJson);
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
         onTap: () {

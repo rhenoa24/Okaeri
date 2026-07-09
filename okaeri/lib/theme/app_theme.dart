@@ -44,22 +44,32 @@ class AppTheme {
     );
   }
 
-  static ThemeData get darkTheme {
-    final scheme = _buildHybridScheme(Brightness.dark);
+  static ThemeData _buildTheme(Brightness brightness) {
+    final scheme = _buildHybridScheme(brightness);
+
     return ThemeData(
       useMaterial3: true,
       colorScheme: scheme,
       scaffoldBackgroundColor: scheme.surfaceContainerLowest,
-      // ...rest of your theme config (text theme, appBarTheme, etc.)
+
+      appBarTheme: AppBarTheme(
+        backgroundColor: scheme.surfaceContainerLowest,
+        foregroundColor: scheme.onSurface,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        centerTitle: false,
+      ),
+
+      cardTheme: CardThemeData(
+        color: scheme.surface,
+        elevation: 1,
+        shadowColor: scheme.shadow,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      ),
     );
   }
 
-  static ThemeData get lightTheme {
-    final scheme = _buildHybridScheme(Brightness.light);
-    return ThemeData(
-      useMaterial3: true,
-      colorScheme: scheme,
-      scaffoldBackgroundColor: scheme.surfaceContainerLowest,
-    );
-  }
+  static ThemeData get lightTheme => _buildTheme(Brightness.light);
+
+  static ThemeData get darkTheme => _buildTheme(Brightness.dark);
 }

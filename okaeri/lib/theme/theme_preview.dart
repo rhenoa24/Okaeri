@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'theme_controller.dart';
 
 class ThemePreviewScreen extends StatelessWidget {
   const ThemePreviewScreen({super.key});
@@ -7,32 +8,48 @@ class ThemePreviewScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final fidelityScheme = ColorScheme.fromSeed(
-      seedColor: seed,
-      brightness: Brightness.dark,
-      dynamicSchemeVariant: DynamicSchemeVariant.fidelity,
-    );
+    return ValueListenableBuilder<ThemeMode>(
+      valueListenable: ThemeController.themeMode,
+      builder: (context, themeMode, _) {
+        final systemBrightness = MediaQuery.platformBrightnessOf(context);
 
-    final monochromeScheme = ColorScheme.fromSeed(
-      seedColor: seed,
-      brightness: Brightness.dark,
-      dynamicSchemeVariant: DynamicSchemeVariant.monochrome,
-    );
+        final brightness = switch (themeMode) {
+          ThemeMode.light => Brightness.light,
+          ThemeMode.dark => Brightness.dark,
+          ThemeMode.system => systemBrightness,
+        };
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('Theme Preview')),
-      body: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: _ThemeColumn(title: 'Fidelity', scheme: fidelityScheme),
+        final fidelityScheme = ColorScheme.fromSeed(
+          seedColor: seed,
+          brightness: brightness,
+          dynamicSchemeVariant: DynamicSchemeVariant.fidelity,
+        );
+
+        final monochromeScheme = ColorScheme.fromSeed(
+          seedColor: seed,
+          brightness: brightness,
+          dynamicSchemeVariant: DynamicSchemeVariant.monochrome,
+        );
+
+        return Scaffold(
+          appBar: AppBar(title: const Text('Theme Preview')),
+          body: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: _ThemeColumn(title: 'Fidelity', scheme: fidelityScheme),
+              ),
+              const VerticalDivider(width: 1),
+              Expanded(
+                child: _ThemeColumn(
+                  title: 'Monochrome',
+                  scheme: monochromeScheme,
+                ),
+              ),
+            ],
           ),
-          const VerticalDivider(width: 1),
-          Expanded(
-            child: _ThemeColumn(title: 'Monochrome', scheme: monochromeScheme),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 }
