@@ -1,6 +1,4 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
 import '../../models/plan.dart';
@@ -49,10 +47,8 @@ class PlanEditorScreen extends StatefulWidget {
 class _PlanEditorScreenState extends State<PlanEditorScreen> {
   final CalendarService _calendarService = CalendarService();
   final _titleController = TextEditingController();
-  late quill.QuillController _quillController;
 
   late DateTime _selectedDate;
-  bool _isImportant = false;
   bool _isSaving = false;
   int _rowIdCounter = 0;
 
@@ -71,7 +67,6 @@ class _PlanEditorScreenState extends State<PlanEditorScreen> {
       final plan = widget.existingPlan!;
       _titleController.text = plan.title;
       _selectedDate = plan.parsedDate;
-      _isImportant = plan.isImportant;
       for (final entry in plan.sortedTimetable) {
         _rows.add(
           _EditableRow(
@@ -81,25 +76,14 @@ class _PlanEditorScreenState extends State<PlanEditorScreen> {
           ),
         );
       }
-      try {
-        final doc = quill.Document.fromJson(jsonDecode(plan.contentJson));
-        _quillController = quill.QuillController(
-          document: doc,
-          selection: const TextSelection.collapsed(offset: 0),
-        );
-      } catch (_) {
-        _quillController = quill.QuillController.basic();
-      }
     } else {
       _selectedDate = widget.initialDate;
-      _quillController = quill.QuillController.basic();
     }
   }
 
   @override
   void dispose() {
     _titleController.dispose();
-    _quillController.dispose();
     for (final row in _rows) {
       row.dispose();
     }
@@ -149,9 +133,6 @@ class _PlanEditorScreenState extends State<PlanEditorScreen> {
     if (_titleController.text.trim().isEmpty) return;
     setState(() => _isSaving = true);
 
-    final contentJson = jsonEncode(
-      _quillController.document.toDelta().toJson(),
-    );
     final title = _titleController.text.trim();
     final date = _formatDate(_selectedDate);
     final timetable = _rows
@@ -171,18 +152,14 @@ class _PlanEditorScreenState extends State<PlanEditorScreen> {
         planId: widget.existingPlan!.id,
         date: date,
         title: title,
-        contentJson: contentJson,
         timetable: timetable,
-        isImportant: _isImportant,
       );
     } else {
       await _calendarService.createPlan(
         coupleId: widget.coupleId,
         date: date,
         title: title,
-        contentJson: contentJson,
         timetable: timetable,
-        isImportant: _isImportant,
         createdBy: myId,
       );
     }

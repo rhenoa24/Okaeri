@@ -162,17 +162,13 @@ class CalendarService {
     required String coupleId,
     required String date,
     required String title,
-    required String contentJson,
     required List<TimetableEntry> timetable,
-    required bool isImportant,
     required String createdBy,
   }) async {
     await _plansRef(coupleId).add({
       'date': date,
       'title': title,
-      'contentJson': contentJson,
       'timetable': timetable.map((e) => e.toMap()).toList(),
-      'isImportant': isImportant,
       'createdBy': createdBy,
       'createdAt': Timestamp.fromDate(DateTime.now()),
     });
@@ -183,16 +179,12 @@ class CalendarService {
     required String planId,
     required String date,
     required String title,
-    required String contentJson,
     required List<TimetableEntry> timetable,
-    required bool isImportant,
   }) async {
     await _plansRef(coupleId).doc(planId).update({
       'date': date,
       'title': title,
-      'contentJson': contentJson,
       'timetable': timetable.map((e) => e.toMap()).toList(),
-      'isImportant': isImportant,
     });
   }
 

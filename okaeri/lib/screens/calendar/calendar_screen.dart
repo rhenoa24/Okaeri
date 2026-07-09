@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:table_calendar/table_calendar.dart';
-import 'package:intl/intl.dart';
 import '../../models/calendar_note.dart';
 import '../../models/plan.dart';
 import '../../services/calendar_service.dart';

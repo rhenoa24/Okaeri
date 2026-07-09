@@ -232,8 +232,6 @@ class _PlanCard extends StatelessWidget {
                         ),
                       ),
                     ),
-                    if (plan.isImportant)
-                      const Icon(Icons.star, size: 16, color: Colors.amber),
                   ],
                 ),
                 if (preview.isEmpty)
