@@ -343,85 +343,58 @@ class _PlanEditorScreenState extends State<PlanEditorScreen> {
                         fontWeight: FontWeight.bold,
                       ),
                       decoration: const InputDecoration(
-                        hintText: 'Plan title',
+                        hintText: 'Untitled',
                         border: InputBorder.none,
                       ),
                     ),
                   ),
-                  InkWell(
-                    onTap: _pickDate,
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 4,
-                      ),
-                      child: Row(
-                        children: [
-                          const Icon(
-                            Icons.edit_calendar_outlined,
-                            size: 18,
-                            color: Colors.grey,
+                  Theme(
+                    data: Theme.of(
+                      context,
+                    ).copyWith(dividerColor: Colors.transparent),
+                    child: ExpansionTile(
+                      tilePadding: const EdgeInsets.symmetric(horizontal: 16),
+                      initiallyExpanded: false,
+                      title: InkWell(
+                        onTap: _pickDate,
+                        borderRadius: BorderRadius.circular(4),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 4),
+                          child: Row(
+                            children: [
+                              const Icon(
+                                Icons.edit_calendar_outlined,
+                                size: 18,
+                                color: Colors.grey,
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  DateFormat(
+                                    'EEEE, MMMM d, yyyy',
+                                  ).format(_selectedDate),
+                                  style: const TextStyle(fontSize: 14),
+                                ),
+                              ),
+                            ],
                           ),
-                          const SizedBox(width: 8),
-                          Text(
-                            DateFormat(
-                              'EEEE, MMMM d, yyyy',
-                            ).format(_selectedDate),
-                            style: const TextStyle(fontSize: 14),
-                          ),
-                        ],
+                        ),
                       ),
+                      children: [
+                        SwitchListTile(
+                          title: const Text('Mark as important'),
+                          subtitle: const Text(
+                            'Shows up on the Home dashboard',
+                          ),
+                          value: _isImportant,
+                          onChanged: (v) => setState(() => _isImportant = v),
+                        ),
+                      ],
                     ),
-                  ),
-                  SwitchListTile(
-                    title: const Text('Mark as important'),
-                    subtitle: const Text('Shows up on the Home dashboard'),
-                    value: _isImportant,
-                    onChanged: (v) => setState(() => _isImportant = v),
                   ),
                   const Divider(height: 1),
                   _buildTimetableSection(),
-                  const Divider(height: 1),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 8,
-                    ),
-                    child: Text(
-                      'Notes',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 15,
-                        color: Colors.grey[700],
-                      ),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    child: SizedBox(
-                      height: 220,
-                      child: quill.QuillEditor.basic(
-                        controller: _quillController,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
                 ],
-              ),
-            ),
-            Material(
-              elevation: 8,
-              color: Theme.of(context).colorScheme.surface,
-              child: SafeArea(
-                top: false,
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 6,
-                  ),
-                  child: quill.QuillSimpleToolbar(controller: _quillController),
-                ),
               ),
             ),
           ],
