@@ -63,7 +63,11 @@ class _ThemeColumn extends StatelessWidget {
 
           _sectionTitle("Primary"),
           _colorTile("Primary", scheme.primary, scheme.onPrimary),
-          _colorTile("Primary Container", scheme.primary, scheme.onPrimary),
+          _colorTile(
+            "Primary Container",
+            scheme.primaryContainer,
+            scheme.onPrimaryContainer,
+          ),
 
           const SizedBox(height: 20),
 
