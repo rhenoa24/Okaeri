@@ -196,7 +196,6 @@ class _EventEditorScreenState extends State<EventEditorScreen> {
                 initiallyExpanded: false,
                 title: InkWell(
                   onTap: _pickDate,
-                  borderRadius: BorderRadius.circular(4),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 4),
                     child: Row(

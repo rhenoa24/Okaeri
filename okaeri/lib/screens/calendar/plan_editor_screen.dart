@@ -352,9 +352,10 @@ class _PlanEditorScreenState extends State<PlanEditorScreen> {
                     data: Theme.of(
                       context,
                     ).copyWith(dividerColor: Colors.transparent),
-                    child: ExpansionTile(
-                      tilePadding: const EdgeInsets.symmetric(horizontal: 16),
-                      initiallyExpanded: false,
+                    child: ListTile(
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                      ),
                       title: InkWell(
                         onTap: _pickDate,
                         borderRadius: BorderRadius.circular(4),
@@ -380,16 +381,6 @@ class _PlanEditorScreenState extends State<PlanEditorScreen> {
                           ),
                         ),
                       ),
-                      children: [
-                        SwitchListTile(
-                          title: const Text('Mark as important'),
-                          subtitle: const Text(
-                            'Shows up on the Home dashboard',
-                          ),
-                          value: _isImportant,
-                          onChanged: (v) => setState(() => _isImportant = v),
-                        ),
-                      ],
                     ),
                   ),
                   const Divider(height: 1),

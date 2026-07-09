@@ -393,25 +393,19 @@ class _ScheduleRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final entries = item.sortedTimetable;
 
-    return InkWell(
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 10),
-        child: Column(
+    return Card(
+      margin: const EdgeInsets.only(bottom: 8),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: ListTile(
+        onTap: onTap,
+        title: Text(
+          item.title,
+          style: const TextStyle(fontWeight: FontWeight.w600),
+        ),
+        subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    item.title,
-                    style: const TextStyle(fontWeight: FontWeight.w600),
-                  ),
-                ),
-                if (item.isImportant)
-                  const Icon(Icons.star, size: 16, color: Colors.amber),
-              ],
-            ),
+            // timetable widgets
             if (entries.isEmpty)
               const Padding(
                 padding: EdgeInsets.only(top: 4),
