@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../../models/schedule_item.dart';
+import '../../models/plan.dart';
 import '../../services/calendar_service.dart';
+import 'plan_editor_screen.dart';
 
 String _dayLabel(String dateStr, DateTime now) {
   final parts = dateStr.split('-').map(int.parse).toList();
@@ -75,6 +76,16 @@ class _PlansScreenState extends State<PlansScreen>
           ),
         ],
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) =>
+                PlanEditorScreen(coupleId: widget.coupleId, initialDate: now),
+          ),
+        ),
+        child: const Icon(Icons.add),
+      ),
     );
   }
 }
@@ -94,20 +105,20 @@ class _PlansListTab extends StatelessWidget {
   Widget build(BuildContext context) {
     final calendarService = CalendarService();
 
-    return StreamBuilder<List<ScheduleItem>>(
-      stream: calendarService.watchSchedule(coupleId, limit: 50),
+    return StreamBuilder<List<Plan>>(
+      stream: calendarService.watchPlans(coupleId, limit: 100),
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
           return const Center(child: CircularProgressIndicator());
         }
 
-        final items = snapshot.data!;
-        if (items.isEmpty) {
+        final plans = snapshot.data!;
+        if (plans.isEmpty) {
           return const Center(
             child: Padding(
               padding: EdgeInsets.all(24),
               child: Text(
-                'No plans yet.\nAdd one from the Calendar tab.',
+                'No plans yet.\nTap + to create one.',
                 textAlign: TextAlign.center,
                 style: TextStyle(color: Colors.grey),
               ),
@@ -116,85 +127,55 @@ class _PlansListTab extends StatelessWidget {
         }
 
         final today = DateTime(now.year, now.month, now.day);
-        final filtered = items.where((item) {
-          final parts = item.date.split('-').map(int.parse).toList();
-          final itemDate = DateTime(parts[0], parts[1], parts[2]);
+        final filtered = plans.where((plan) {
+          final itemDate = plan.parsedDate;
           return upcomingOnly
               ? !itemDate.isBefore(today)
               : itemDate.isBefore(today);
         }).toList();
 
         if (filtered.isEmpty) {
-          return const Center(
+          return Center(
             child: Padding(
-              padding: EdgeInsets.all(24),
+              padding: const EdgeInsets.all(24),
               child: Text(
-                'No past plans yet.',
+                upcomingOnly ? 'No upcoming plans yet.' : 'No past plans yet.',
                 textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.grey),
+                style: const TextStyle(color: Colors.grey),
               ),
             ),
           );
         }
 
-        final grouped = <String, List<ScheduleItem>>{};
-        for (final item in filtered) {
-          grouped.putIfAbsent(item.date, () => []).add(item);
+        // Group plans by date so multiple plans on the same day still get
+        // a shared day header — but each plan keeps its own card, title,
+        // and timetable, instead of every timestamp being flattened together.
+        final grouped = <String, List<Plan>>{};
+        for (final plan in filtered) {
+          grouped.putIfAbsent(plan.date, () => []).add(plan);
         }
+        final sortedDates = grouped.keys.toList()
+          ..sort((a, b) => upcomingOnly ? a.compareTo(b) : b.compareTo(a));
 
         return ListView(
           padding: const EdgeInsets.all(16),
-          children: grouped.entries.map((entry) {
+          children: sortedDates.map((date) {
+            final dayPlans = grouped[date]!;
             return Padding(
               padding: const EdgeInsets.only(bottom: 20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    _dayLabel(entry.key, now),
+                    _dayLabel(date, now),
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 15,
                     ),
                   ),
                   const SizedBox(height: 8),
-                  Card(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 8,
-                      ),
-                      child: Column(
-                        children: entry.value
-                            .map(
-                              (item) => Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 8,
-                                ),
-                                child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    SizedBox(
-                                      width: 80,
-                                      child: Text(
-                                        _displayTime(item.time),
-                                        style: const TextStyle(
-                                          fontWeight: FontWeight.w600,
-                                          color: Colors.grey,
-                                        ),
-                                      ),
-                                    ),
-                                    Expanded(child: Text(item.text)),
-                                  ],
-                                ),
-                              ),
-                            )
-                            .toList(),
-                      ),
-                    ),
+                  ...dayPlans.map(
+                    (plan) => _PlanCard(coupleId: coupleId, plan: plan),
                   ),
                 ],
               ),
@@ -202,6 +183,110 @@ class _PlansListTab extends StatelessWidget {
           }).toList(),
         );
       },
+    );
+  }
+}
+
+class _PlanCard extends StatelessWidget {
+  final String coupleId;
+  final Plan plan;
+
+  const _PlanCard({required this.coupleId, required this.plan});
+
+  @override
+  Widget build(BuildContext context) {
+    final entries = plan.sortedTimetable;
+    const previewCount = 3;
+    final preview = entries.take(previewCount).toList();
+    final remaining = entries.length - preview.length;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Card(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(12),
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => PlanEditorScreen(
+                coupleId: coupleId,
+                initialDate: plan.parsedDate,
+                existingPlan: plan,
+              ),
+            ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        plan.title,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+                    if (plan.isImportant)
+                      const Icon(Icons.star, size: 16, color: Colors.amber),
+                  ],
+                ),
+                if (preview.isEmpty)
+                  const Padding(
+                    padding: EdgeInsets.only(top: 6),
+                    child: Text(
+                      'No timetable yet',
+                      style: TextStyle(color: Colors.grey, fontSize: 13),
+                    ),
+                  )
+                else ...[
+                  const SizedBox(height: 10),
+                  ...preview.map(
+                    (e) => Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 3),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          SizedBox(
+                            width: 76,
+                            child: Text(
+                              _displayTime(e.time),
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w600,
+                                color: Colors.grey,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ),
+                          Expanded(
+                            child: Text(
+                              e.text,
+                              style: const TextStyle(fontSize: 13),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  if (remaining > 0)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: Text(
+                        '+$remaining more',
+                        style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                      ),
+                    ),
+                ],
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

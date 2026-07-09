@@ -3,12 +3,13 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:intl/intl.dart';
 import '../../models/calendar_note.dart';
-import '../../models/schedule_item.dart';
+import '../../models/plan.dart';
 import '../../services/calendar_service.dart';
 import '../../utils/quill_text.dart';
 import 'events_screen.dart';
 import 'plans_screen.dart';
-import 'calendar_note_editor_screen.dart';
+import 'plan_editor_screen.dart';
+import 'event_editor_screen.dart';
 
 String _formatDate(DateTime d) =>
     '${d.year.toString().padLeft(4, '0')}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
@@ -23,7 +24,7 @@ class CalendarMarker {
 List<CalendarMarker> buildCalendarDayMarkers({
   required DateTime day,
   required List<CalendarNote> notes,
-  required List<ScheduleItem> plans,
+  required List<Plan> plans,
 }) {
   final dayStr = _formatDate(day);
   final monthDay = dayStr.substring(5);
@@ -90,7 +91,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
         .toList();
   }
 
-  List<ScheduleItem> _plansForDay(DateTime day, List<ScheduleItem> allPlans) {
+  List<Plan> _plansForDay(DateTime day, List<Plan> allPlans) {
     final dayStr = _formatDate(day);
     return allPlans.where((item) => item.date == dayStr).toList();
   }
@@ -99,10 +100,25 @@ class _CalendarScreenState extends State<CalendarScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => CalendarNoteEditorScreen(
+        builder: (_) => EventEditorScreen(
           coupleId: widget.coupleId,
           initialDate: _selectedDay,
           existingNote: existing,
+        ),
+      ),
+    );
+  }
+
+  // A plan now carries a title, notes, and a whole timetable, so it needs
+  // the full editor screen rather than the old single-time bottom sheet.
+  void _openPlanEditor({Plan? existing}) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => PlanEditorScreen(
+          coupleId: widget.coupleId,
+          initialDate: _selectedDay,
+          existingPlan: existing,
         ),
       ),
     );
@@ -254,7 +270,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
                     _SectionHeader(
                       title: 'Plans',
-                      onAdd: () => _showAddScheduleSheet(),
+                      onAdd: () => _openPlanEditor(),
                     ),
                     const SizedBox(height: 8),
                     if (selectedPlans.isEmpty)
@@ -265,8 +281,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                             .map(
                               (item) => _ScheduleRow(
                                 item: item,
-                                onTap: () =>
-                                    _showAddScheduleSheet(existing: item),
+                                onTap: () => _openPlanEditor(existing: item),
                               ),
                             )
                             .toList(),
@@ -278,146 +293,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
           );
         },
       ),
-    );
-  }
-
-  // ---------- Add / Edit Schedule sheet (unchanged — still a quick bottom sheet) ----------
-
-  void _showAddScheduleSheet({ScheduleItem? existing}) {
-    final textController = TextEditingController(text: existing?.text ?? '');
-    TimeOfDay selectedTime = existing != null
-        ? TimeOfDay(
-            hour: int.parse(existing.time.split(':')[0]),
-            minute: int.parse(existing.time.split(':')[1]),
-          )
-        : TimeOfDay.now();
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setSheetState) {
-            return Padding(
-              padding: EdgeInsets.only(
-                left: 20,
-                right: 20,
-                top: 20,
-                bottom: MediaQuery.of(context).viewInsets.bottom + 20,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    existing == null
-                        ? 'New Schedule Item'
-                        : 'Edit Schedule Item',
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  InkWell(
-                    onTap: () async {
-                      final picked = await showTimePicker(
-                        context: context,
-                        initialTime: selectedTime,
-                      );
-                      if (picked != null) {
-                        setSheetState(() => selectedTime = picked);
-                      }
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 14,
-                        horizontal: 12,
-                      ),
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.grey.shade400),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Row(
-                        children: [
-                          const Icon(
-                            Icons.access_time,
-                            size: 20,
-                            color: Colors.grey,
-                          ),
-                          const SizedBox(width: 10),
-                          Text(
-                            selectedTime.format(context),
-                            style: const TextStyle(fontSize: 16),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  TextField(
-                    controller: textController,
-                    decoration: const InputDecoration(
-                      labelText: 'What\'s happening?',
-                      hintText: 'e.g. Dinner at our ramen place',
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      if (existing != null)
-                        TextButton(
-                          onPressed: () async {
-                            await _calendarService.deleteScheduleItem(
-                              widget.coupleId,
-                              existing.id,
-                            );
-                            if (context.mounted) Navigator.pop(context);
-                          },
-                          style: TextButton.styleFrom(
-                            foregroundColor: Colors.red,
-                          ),
-                          child: const Text('Delete'),
-                        ),
-                      const Spacer(),
-                      FilledButton(
-                        onPressed: () async {
-                          if (textController.text.trim().isEmpty) return;
-                          final timeStr =
-                              '${selectedTime.hour.toString().padLeft(2, '0')}:${selectedTime.minute.toString().padLeft(2, '0')}';
-
-                          if (existing == null) {
-                            await _calendarService.createScheduleItem(
-                              coupleId: widget.coupleId,
-                              date: _formatDate(_selectedDay),
-                              time: timeStr,
-                              text: textController.text.trim(),
-                              createdBy: myId,
-                            );
-                          } else {
-                            await _calendarService.updateScheduleItem(
-                              coupleId: widget.coupleId,
-                              itemId: existing.id,
-                              time: timeStr,
-                              text: textController.text.trim(),
-                            );
-                          }
-                          if (context.mounted) Navigator.pop(context);
-                        },
-                        child: const Text('Save'),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            );
-          },
-        );
-      },
     );
   }
 }
@@ -497,15 +372,18 @@ class _NoteTile extends StatelessWidget {
   }
 }
 
+// One plan in the day view: title up top, then a compact preview of its
+// timetable rows underneath (a plan can have several times now, not just
+// one), same idea as the cards on the full Plans screen.
 class _ScheduleRow extends StatelessWidget {
-  final ScheduleItem item;
+  final Plan item;
   final VoidCallback onTap;
 
   const _ScheduleRow({required this.item, required this.onTap});
 
-  String get _displayTime {
-    final hour = int.parse(item.time.split(':')[0]);
-    final minute = item.time.split(':')[1];
+  String _displayTime(String time) {
+    final hour = int.parse(time.split(':')[0]);
+    final minute = time.split(':')[1];
     final period = hour >= 12 ? 'PM' : 'AM';
     final hour12 = hour % 12 == 0 ? 12 : hour % 12;
     return '$hour12:$minute $period';
@@ -513,24 +391,63 @@ class _ScheduleRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final entries = item.sortedTimetable;
+
     return InkWell(
       onTap: onTap,
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 10),
-        child: Row(
+        child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(
-              width: 80,
-              child: Text(
-                _displayTime,
-                style: const TextStyle(
-                  fontWeight: FontWeight.w600,
-                  color: Colors.grey,
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    item.title,
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                ),
+                if (item.isImportant)
+                  const Icon(Icons.star, size: 16, color: Colors.amber),
+              ],
+            ),
+            if (entries.isEmpty)
+              const Padding(
+                padding: EdgeInsets.only(top: 4),
+                child: Text(
+                  'No timetable yet',
+                  style: TextStyle(color: Colors.grey, fontSize: 13),
+                ),
+              )
+            else
+              ...entries.map(
+                (e) => Padding(
+                  padding: const EdgeInsets.only(top: 6),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(
+                        width: 76,
+                        child: Text(
+                          _displayTime(e.time),
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w600,
+                            color: Colors.grey,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        child: Text(
+                          e.text,
+                          style: const TextStyle(fontSize: 13),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-            Expanded(child: Text(item.text)),
           ],
         ),
       ),

@@ -4,7 +4,7 @@ import '../screens/home/home_screen.dart';
 import '../screens/notes/notes_screen.dart';
 import '../screens/notes/note_editor_screen.dart';
 import '../screens/calendar/calendar_screen.dart';
-import '../screens/calendar/calendar_note_editor_screen.dart';
+import '../screens/calendar/event_editor_screen.dart';
 import '../screens/more/more_screen.dart';
 
 class AppShell extends StatefulWidget {
@@ -67,7 +67,7 @@ class _AppShellState extends State<AppShell> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => CalendarNoteEditorScreen(
+                      builder: (_) => EventEditorScreen(
                         coupleId: widget.coupleId,
                         initialDate: DateTime.now(),
                       ),

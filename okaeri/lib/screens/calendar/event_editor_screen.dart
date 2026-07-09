@@ -9,12 +9,12 @@ import '../../services/calendar_service.dart';
 String _formatDate(DateTime d) =>
     '${d.year.toString().padLeft(4, '0')}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
 
-class CalendarNoteEditorScreen extends StatefulWidget {
+class EventEditorScreen extends StatefulWidget {
   final String coupleId;
   final DateTime initialDate; // used only when creating a new note
   final CalendarNote? existingNote;
 
-  const CalendarNoteEditorScreen({
+  const EventEditorScreen({
     super.key,
     required this.coupleId,
     required this.initialDate,
@@ -22,11 +22,10 @@ class CalendarNoteEditorScreen extends StatefulWidget {
   });
 
   @override
-  State<CalendarNoteEditorScreen> createState() =>
-      _CalendarNoteEditorScreenState();
+  State<EventEditorScreen> createState() => _EventEditorScreenState();
 }
 
-class _CalendarNoteEditorScreenState extends State<CalendarNoteEditorScreen> {
+class _EventEditorScreenState extends State<EventEditorScreen> {
   final CalendarService _calendarService = CalendarService();
   final _titleController = TextEditingController();
   late quill.QuillController _quillController;

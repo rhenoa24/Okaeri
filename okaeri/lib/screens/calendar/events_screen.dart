@@ -3,7 +3,7 @@ import 'package:intl/intl.dart';
 import '../../models/calendar_note.dart';
 import '../../services/calendar_service.dart';
 import '../../utils/quill_text.dart';
-import 'calendar_note_editor_screen.dart';
+import 'event_editor_screen.dart';
 
 String _daysUntilLabel(DateTime target, DateTime from) {
   final t = DateTime(target.year, target.month, target.day);
@@ -208,7 +208,7 @@ class _DateTile extends StatelessWidget {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (_) => CalendarNoteEditorScreen(
+              builder: (_) => EventEditorScreen(
                 coupleId: coupleId,
                 initialDate: note.parsedDate,
                 existingNote: note,

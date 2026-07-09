@@ -5,7 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import '../../models/message.dart';
 import '../../models/calendar_note.dart';
-import '../../models/schedule_item.dart';
+import '../../models/plan.dart';
 import '../../services/message_service.dart';
 import '../../services/user_service.dart';
 import '../../services/calendar_service.dart';
@@ -145,8 +145,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               );
             },
-            child: StreamBuilder<List<ScheduleItem>>(
-              stream: _calendarService.watchUpcomingSchedule(
+            child: StreamBuilder<List<Plan>>(
+              stream: _calendarService.watchUpcomingPlans(
                 widget.coupleId,
                 limit: 3,
               ),
@@ -327,12 +327,16 @@ class _LatestMessagePreview extends StatelessWidget {
 }
 
 class _PlanPreviewRow extends StatelessWidget {
-  final ScheduleItem item;
+  final Plan item;
   const _PlanPreviewRow({required this.item});
 
+  // A plan can have several timetable entries now; the preview just shows
+  // the earliest one, if any have been added yet.
   String get _displayTime {
-    final hour = int.parse(item.time.split(':')[0]);
-    final minute = item.time.split(':')[1];
+    final entries = item.sortedTimetable;
+    if (entries.isEmpty) return '';
+    final hour = int.parse(entries.first.time.split(':')[0]);
+    final minute = entries.first.time.split(':')[1];
     final period = hour >= 12 ? 'PM' : 'AM';
     final hour12 = hour % 12 == 0 ? 12 : hour % 12;
     return '$hour12:$minute $period';
@@ -345,13 +349,18 @@ class _PlanPreviewRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final time = _displayTime;
+    final dateLabel = time.isEmpty
+        ? DateFormat('MMM d').format(_date)
+        : '${DateFormat('MMM d').format(_date)}, $time';
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         children: [
           Expanded(
             child: Text(
-              item.text,
+              item.title,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(fontSize: 14),
@@ -359,7 +368,7 @@ class _PlanPreviewRow extends StatelessWidget {
           ),
           const SizedBox(width: 8),
           Text(
-            '${DateFormat('MMM d').format(_date)}, $_displayTime',
+            dateLabel,
             style: const TextStyle(fontSize: 12, color: Colors.grey),
           ),
         ],

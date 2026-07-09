@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/calendar_note.dart';
-import '../models/schedule_item.dart';
+import '../models/plan.dart';
 
 String todayDateString() {
   final now = DateTime.now();
@@ -13,7 +13,7 @@ class CalendarData {
   const CalendarData({required this.notes, required this.plans});
 
   final List<CalendarNote> notes;
-  final List<ScheduleItem> plans;
+  final List<Plan> plans;
 }
 
 class CalendarService {
@@ -22,11 +22,10 @@ class CalendarService {
       .doc(coupleId)
       .collection('calendarNotes');
 
-  CollectionReference _scheduleRef(String coupleId) => FirebaseFirestore
-      .instance
+  CollectionReference _plansRef(String coupleId) => FirebaseFirestore.instance
       .collection('couples')
       .doc(coupleId)
-      .collection('scheduleItems');
+      .collection('plans');
 
   // Fetch ALL notes for this couple. At a 2-person scale this collection
   // stays tiny, so filtering by date (including yearly repeats) happens
@@ -41,22 +40,13 @@ class CalendarService {
     );
   }
 
-  Stream<List<ScheduleItem>> watchScheduleForDate(
-    String coupleId,
-    String date,
-  ) {
-    return _scheduleRef(coupleId)
+  Stream<List<Plan>> watchPlansForDate(String coupleId, String date) {
+    return _plansRef(coupleId)
         .where('date', isEqualTo: date)
-        .orderBy('time')
         .snapshots()
         .map(
           (snap) => snap.docs
-              .map(
-                (d) => ScheduleItem.fromMap(
-                  d.id,
-                  d.data() as Map<String, dynamic>,
-                ),
-              )
+              .map((d) => Plan.fromMap(d.id, d.data() as Map<String, dynamic>))
               .toList(),
         );
   }
@@ -64,7 +54,7 @@ class CalendarService {
   Stream<CalendarData> watchCalendarData(String coupleId) {
     return Stream.multi((controller) {
       List<CalendarNote> notes = [];
-      List<ScheduleItem> plans = [];
+      List<Plan> plans = [];
       bool hasNotes = false;
       bool hasPlans = false;
 
@@ -75,7 +65,7 @@ class CalendarService {
       }
 
       late final StreamSubscription<List<CalendarNote>> notesSub;
-      late final StreamSubscription<List<ScheduleItem>> plansSub;
+      late final StreamSubscription<List<Plan>> plansSub;
 
       notesSub = watchAllNotes(coupleId).listen((value) {
         notes = value;
@@ -83,7 +73,7 @@ class CalendarService {
         emitIfReady();
       }, onError: controller.addError);
 
-      plansSub = watchSchedule(coupleId, limit: 1000).listen((value) {
+      plansSub = watchPlans(coupleId, limit: 1000).listen((value) {
         plans = value;
         hasPlans = true;
         emitIfReady();
@@ -96,44 +86,32 @@ class CalendarService {
     });
   }
 
-  Stream<List<ScheduleItem>> watchSchedule(String coupleId, {int limit = 50}) {
-    return _scheduleRef(coupleId)
+  // All plans, ordered by date. Each doc is one titled plan with its own
+  // embedded timetable, so this is already "grouped" — no client-side
+  // grouping-by-timestamp needed like the old Plan model.
+  Stream<List<Plan>> watchPlans(String coupleId, {int limit = 50}) {
+    return _plansRef(coupleId)
         .orderBy('date')
-        .orderBy('time')
         .limit(limit)
         .snapshots()
         .map(
           (snap) => snap.docs
-              .map(
-                (d) => ScheduleItem.fromMap(
-                  d.id,
-                  d.data() as Map<String, dynamic>,
-                ),
-              )
+              .map((d) => Plan.fromMap(d.id, d.data() as Map<String, dynamic>))
               .toList(),
         );
   }
 
-  // Schedule items from today onward, across all days, soonest first.
-  // Used for the "Upcoming Plans" preview on Home and its full list screen.
-  Stream<List<ScheduleItem>> watchUpcomingSchedule(
-    String coupleId, {
-    int limit = 5,
-  }) {
-    return _scheduleRef(coupleId)
+  // Plans from today onward, soonest first. Used for the "Upcoming Plans"
+  // preview on Home and its full list screen.
+  Stream<List<Plan>> watchUpcomingPlans(String coupleId, {int limit = 5}) {
+    return _plansRef(coupleId)
         .where('date', isGreaterThanOrEqualTo: todayDateString())
         .orderBy('date')
-        .orderBy('time')
         .limit(limit)
         .snapshots()
         .map(
           (snap) => snap.docs
-              .map(
-                (d) => ScheduleItem.fromMap(
-                  d.id,
-                  d.data() as Map<String, dynamic>,
-                ),
-              )
+              .map((d) => Plan.fromMap(d.id, d.data() as Map<String, dynamic>))
               .toList(),
         );
   }
@@ -180,30 +158,45 @@ class CalendarService {
     await _notesRef(coupleId).doc(noteId).delete();
   }
 
-  Future<void> createScheduleItem({
+  Future<void> createPlan({
     required String coupleId,
     required String date,
-    required String time,
-    required String text,
+    required String title,
+    required String contentJson,
+    required List<TimetableEntry> timetable,
+    required bool isImportant,
     required String createdBy,
   }) async {
-    await _scheduleRef(
-      coupleId,
-    ).add({'date': date, 'time': time, 'text': text, 'createdBy': createdBy});
+    await _plansRef(coupleId).add({
+      'date': date,
+      'title': title,
+      'contentJson': contentJson,
+      'timetable': timetable.map((e) => e.toMap()).toList(),
+      'isImportant': isImportant,
+      'createdBy': createdBy,
+      'createdAt': Timestamp.fromDate(DateTime.now()),
+    });
   }
 
-  Future<void> updateScheduleItem({
+  Future<void> updatePlan({
     required String coupleId,
-    required String itemId,
-    required String time,
-    required String text,
+    required String planId,
+    required String date,
+    required String title,
+    required String contentJson,
+    required List<TimetableEntry> timetable,
+    required bool isImportant,
   }) async {
-    await _scheduleRef(
-      coupleId,
-    ).doc(itemId).update({'time': time, 'text': text});
+    await _plansRef(coupleId).doc(planId).update({
+      'date': date,
+      'title': title,
+      'contentJson': contentJson,
+      'timetable': timetable.map((e) => e.toMap()).toList(),
+      'isImportant': isImportant,
+    });
   }
 
-  Future<void> deleteScheduleItem(String coupleId, String itemId) async {
-    await _scheduleRef(coupleId).doc(itemId).delete();
+  Future<void> deletePlan(String coupleId, String planId) async {
+    await _plansRef(coupleId).doc(planId).delete();
   }
 }
