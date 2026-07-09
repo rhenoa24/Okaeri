@@ -22,7 +22,7 @@ class AppTheme {
       primary: fidelityScheme.primaryContainer,
       onPrimary: fidelityScheme.onPrimaryContainer,
 
-      surface: monochromeScheme.surface,
+      surface: monochromeScheme.surfaceContainerLowest,
       onSurface: monochromeScheme.onSurface,
       onSurfaceVariant: monochromeScheme.onSurfaceVariant,
 
@@ -50,7 +50,6 @@ class AppTheme {
     return ThemeData(
       useMaterial3: true,
       colorScheme: scheme,
-      scaffoldBackgroundColor: scheme.surfaceContainerLowest,
 
       appBarTheme: AppBarTheme(
         backgroundColor: scheme.surfaceContainerLowest,
@@ -61,7 +60,7 @@ class AppTheme {
       ),
 
       cardTheme: CardThemeData(
-        color: scheme.surface,
+        color: scheme.surfaceContainer,
         elevation: 1,
         shadowColor: scheme.shadow,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),

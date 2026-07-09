@@ -138,8 +138,12 @@ class _ThemeColumn extends StatelessWidget {
 
           _sectionTitle("Other"),
           _colorTile("Error", scheme.error, scheme.onError),
-          _colorTile("Outline", scheme.outline, scheme.surface),
-          _colorTile("Outline Variant", scheme.outlineVariant, scheme.surface),
+          _colorTile("Outline", scheme.outline, scheme.surfaceContainer),
+          _colorTile(
+            "Outline Variant",
+            scheme.outlineVariant,
+            scheme.surfaceContainer,
+          ),
 
           const SizedBox(height: 28),
 

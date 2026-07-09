@@ -139,7 +139,9 @@ class _PairingScreenState extends State<PairingScreen> {
                   vertical: 16,
                 ),
                 decoration: BoxDecoration(
-                  border: Border.all(color: Colors.pink),
+                  border: Border.all(
+                    color: Theme.of(context).colorScheme.outlineVariant,
+                  ),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
