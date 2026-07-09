@@ -248,7 +248,7 @@ class _PlanEditorScreenState extends State<PlanEditorScreen> {
                         vertical: 8,
                       ),
                       decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.surfaceVariant,
+                        color: Theme.of(context).colorScheme.primary,
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(

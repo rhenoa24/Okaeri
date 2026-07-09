@@ -49,11 +49,6 @@ class _AppShellState extends State<AppShell> {
   void _showAddActionSheet() {
     showModalBottomSheet(
       context: context,
-      backgroundColor: Theme.of(context).colorScheme.surfaceDim,
-      showDragHandle: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
       builder: (context) {
         return SafeArea(
           child: Padding(

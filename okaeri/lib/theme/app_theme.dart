@@ -75,6 +75,26 @@ class AppTheme {
         dividerColor: scheme.surfaceContainer,
         dividerHeight: 1,
       ),
+
+      datePickerTheme: DatePickerThemeData(
+        backgroundColor: scheme.surfaceContainer,
+        headerBackgroundColor: scheme.primary,
+        headerForegroundColor: scheme.onPrimary,
+        dayForegroundColor: WidgetStatePropertyAll(scheme.onSurface),
+        todayForegroundColor: WidgetStatePropertyAll(scheme.onSurface),
+        todayBorder: BorderSide.none,
+        todayBackgroundColor: WidgetStatePropertyAll(
+          scheme.surfaceContainerHigh,
+        ),
+      ),
+
+      bottomSheetTheme: BottomSheetThemeData(
+        backgroundColor: scheme.surfaceDim,
+        showDragHandle: true,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+      ),
     );
   }
 

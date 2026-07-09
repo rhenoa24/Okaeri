@@ -235,7 +235,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                     shape: BoxShape.circle,
                   ),
                   todayDecoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.surface,
+                    color: Theme.of(context).colorScheme.surfaceContainer,
                     shape: BoxShape.circle,
                   ),
                 ),
