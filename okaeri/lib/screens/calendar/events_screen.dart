@@ -110,7 +110,7 @@ class _DateListTab extends StatelessWidget {
                     ? 'No important dates marked yet.\nMark a note as important from the Calendar tab.'
                     : 'No events yet.\nCreate one from the Calendar tab.',
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: Colors.grey),
+                style: TextStyle(color: Theme.of(context).colorScheme.outline),
               ),
             ),
           );
@@ -158,12 +158,12 @@ class _DateListTab extends StatelessWidget {
               const SizedBox(height: 24),
             ],
             if (past.isNotEmpty) ...[
-              const Text(
+              Text(
                 'Past',
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 15,
-                  color: Colors.grey,
+                  color: Theme.of(context).colorScheme.outline,
                 ),
               ),
               const SizedBox(height: 8),

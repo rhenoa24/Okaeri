@@ -235,9 +235,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                     shape: BoxShape.circle,
                   ),
                   todayDecoration: BoxDecoration(
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.primary.withOpacity(0.3),
+                    color: Theme.of(context).colorScheme.surface,
                     shape: BoxShape.circle,
                   ),
                 ),
@@ -332,7 +330,10 @@ class _EmptyHint extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Text(
         text,
-        style: const TextStyle(color: Colors.grey, fontStyle: FontStyle.italic),
+        style: TextStyle(
+          color: Theme.of(context).colorScheme.outline,
+          fontStyle: FontStyle.italic,
+        ),
       ),
     );
   }
@@ -365,7 +366,11 @@ class _NoteTile extends StatelessWidget {
             ? null
             : Text(preview, maxLines: 2, overflow: TextOverflow.ellipsis),
         trailing: note.isRepeating
-            ? const Icon(Icons.repeat, size: 18, color: Colors.grey)
+            ? Icon(
+                Icons.repeat,
+                size: 18,
+                color: Theme.of(context).colorScheme.outline,
+              )
             : null,
       ),
     );
@@ -407,11 +412,14 @@ class _ScheduleRow extends StatelessWidget {
           children: [
             // timetable widgets
             if (entries.isEmpty)
-              const Padding(
+              Padding(
                 padding: EdgeInsets.only(top: 4),
                 child: Text(
                   'No timetable yet',
-                  style: TextStyle(color: Colors.grey, fontSize: 13),
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.outline,
+                    fontSize: 13,
+                  ),
                 ),
               )
             else
@@ -425,9 +433,9 @@ class _ScheduleRow extends StatelessWidget {
                         width: 76,
                         child: Text(
                           _displayTime(e.time),
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontWeight: FontWeight.w600,
-                            color: Colors.grey,
+                            color: Theme.of(context).colorScheme.outline,
                             fontSize: 13,
                           ),
                         ),

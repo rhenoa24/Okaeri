@@ -153,7 +153,10 @@ class _PairingScreenState extends State<PairingScreen> {
               ),
             ),
             const SizedBox(height: 8),
-            const Text('(tap to copy)', style: TextStyle(color: Colors.grey)),
+            Text(
+              '(tap to copy)',
+              style: TextStyle(color: Theme.of(context).colorScheme.outline),
+            ),
             const SizedBox(height: 24),
             const CircularProgressIndicator(),
             const SizedBox(height: 12),

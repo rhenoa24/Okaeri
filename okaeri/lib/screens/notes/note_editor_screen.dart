@@ -170,12 +170,14 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
                   Icon(
                     _isShared ? Icons.home_outlined : Icons.lock_outline,
                     size: 18,
-                    color: Colors.grey,
+                    color: Theme.of(context).colorScheme.outline,
                   ),
                   const SizedBox(width: 8),
                   Text(
                     _isShared ? 'Shared with your partner' : 'Private note',
-                    style: TextStyle(color: Colors.grey[700]),
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.outline,
+                    ),
                   ),
                   const Spacer(),
                   Switch(

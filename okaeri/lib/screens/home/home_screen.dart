@@ -272,7 +272,7 @@ class _SectionCard extends StatelessWidget {
                   Icon(
                     icon,
                     size: 20,
-                    color: Theme.of(context).colorScheme.primaryContainer,
+                    color: Theme.of(context).colorScheme.primary,
                   ),
                   const SizedBox(width: 8),
                   Text(
@@ -311,10 +311,10 @@ class _LatestMessagePreview extends StatelessWidget {
       children: [
         Text(
           message.authorName,
-          style: const TextStyle(
+          style: TextStyle(
             fontWeight: FontWeight.w600,
             fontSize: 13,
-            color: Colors.grey,
+            color: Theme.of(context).colorScheme.outline,
           ),
         ),
         const SizedBox(height: 4),
@@ -372,7 +372,10 @@ class _PlanPreviewRow extends StatelessWidget {
           const SizedBox(width: 8),
           Text(
             dateLabel,
-            style: const TextStyle(fontSize: 12, color: Colors.grey),
+            style: TextStyle(
+              fontSize: 12,
+              color: Theme.of(context).colorScheme.outline,
+            ),
           ),
         ],
       ),
@@ -406,7 +409,10 @@ class _ImportantDatePreviewRow extends StatelessWidget {
           const SizedBox(width: 8),
           Text(
             DateFormat('MMM d').format(occurrence),
-            style: const TextStyle(fontSize: 12, color: Colors.grey),
+            style: TextStyle(
+              fontSize: 12,
+              color: Theme.of(context).colorScheme.outline,
+            ),
           ),
         ],
       ),
@@ -422,7 +428,10 @@ class _EmptyState extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       text,
-      style: const TextStyle(color: Colors.grey, fontStyle: FontStyle.italic),
+      style: TextStyle(
+        color: Theme.of(context).colorScheme.outline,
+        fontStyle: FontStyle.italic,
+      ),
     );
   }
 }

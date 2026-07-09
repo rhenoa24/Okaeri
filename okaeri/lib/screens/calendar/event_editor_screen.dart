@@ -200,10 +200,10 @@ class _EventEditorScreenState extends State<EventEditorScreen> {
                     padding: const EdgeInsets.symmetric(vertical: 4),
                     child: Row(
                       children: [
-                        const Icon(
+                        Icon(
                           Icons.edit_calendar_outlined,
                           size: 18,
-                          color: Colors.grey,
+                          color: Theme.of(context).colorScheme.outline,
                         ),
                         const SizedBox(width: 8),
                         Expanded(

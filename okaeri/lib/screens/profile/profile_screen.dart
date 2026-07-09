@@ -216,9 +216,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
             builder: (context, coupleIdSnapshot) {
               final coupleId = coupleIdSnapshot.data;
               if (coupleId == null) {
-                return const Text(
+                return Text(
                   'Not paired yet.',
-                  style: TextStyle(color: Colors.grey),
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.outline,
+                  ),
                 );
               }
 

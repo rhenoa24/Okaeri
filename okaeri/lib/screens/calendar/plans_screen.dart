@@ -114,13 +114,13 @@ class _PlansListTab extends StatelessWidget {
 
         final plans = snapshot.data!;
         if (plans.isEmpty) {
-          return const Center(
+          return Center(
             child: Padding(
               padding: EdgeInsets.all(24),
               child: Text(
                 'No plans yet.\nTap + to create one.',
                 textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.grey),
+                style: TextStyle(color: Theme.of(context).colorScheme.outline),
               ),
             ),
           );
@@ -141,7 +141,7 @@ class _PlansListTab extends StatelessWidget {
               child: Text(
                 upcomingOnly ? 'No upcoming plans yet.' : 'No past plans yet.',
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: Colors.grey),
+                style: TextStyle(color: Theme.of(context).colorScheme.outline),
               ),
             ),
           );
@@ -235,11 +235,14 @@ class _PlanCard extends StatelessWidget {
                   ],
                 ),
                 if (preview.isEmpty)
-                  const Padding(
+                  Padding(
                     padding: EdgeInsets.only(top: 6),
                     child: Text(
                       'No timetable yet',
-                      style: TextStyle(color: Colors.grey, fontSize: 13),
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.outline,
+                        fontSize: 13,
+                      ),
                     ),
                   )
                 else ...[
@@ -254,9 +257,9 @@ class _PlanCard extends StatelessWidget {
                             width: 76,
                             child: Text(
                               _displayTime(e.time),
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontWeight: FontWeight.w600,
-                                color: Colors.grey,
+                                color: Theme.of(context).colorScheme.outline,
                                 fontSize: 13,
                               ),
                             ),
@@ -276,7 +279,10 @@ class _PlanCard extends StatelessWidget {
                       padding: const EdgeInsets.only(top: 4),
                       child: Text(
                         '+$remaining more',
-                        style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.outline,
+                          fontSize: 12,
+                        ),
                       ),
                     ),
                 ],

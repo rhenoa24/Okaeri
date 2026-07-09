@@ -64,7 +64,7 @@ class _AppShellState extends State<AppShell> {
                 ListTile(
                   leading: Icon(
                     Icons.note_add_outlined,
-                    color: Theme.of(context).colorScheme.primaryContainer,
+                    color: Theme.of(context).colorScheme.primary,
                   ),
                   title: const Text(
                     'New Note',
@@ -87,7 +87,7 @@ class _AppShellState extends State<AppShell> {
                 ListTile(
                   leading: Icon(
                     Icons.favorite_outline,
-                    color: Theme.of(context).colorScheme.primaryContainer,
+                    color: Theme.of(context).colorScheme.primary,
                   ),
                   title: const Text(
                     'New Event',
@@ -110,7 +110,7 @@ class _AppShellState extends State<AppShell> {
                 ListTile(
                   leading: Icon(
                     Icons.alarm,
-                    color: Theme.of(context).colorScheme.primaryContainer,
+                    color: Theme.of(context).colorScheme.primary,
                   ),
                   title: const Text(
                     'New Plan',
@@ -150,57 +150,63 @@ class _AppShellState extends State<AppShell> {
         child: FloatingActionButton(
           onPressed: _showAddActionSheet,
           shape: const CircleBorder(),
-          backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+          backgroundColor: Theme.of(context).colorScheme.primary,
           child: Icon(
             Icons.add,
             size: 30,
-            color: Theme.of(context).colorScheme.onPrimaryContainer,
+            color: Theme.of(context).colorScheme.onPrimary,
           ),
         ),
       ),
       floatingActionButtonLocation: const _LoweredCenterDocked(20),
-      bottomNavigationBar: BottomAppBar(
-        color: Theme.of(context).colorScheme.surfaceContainerLowest,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            Expanded(
-              child: _navItem(
-                icon: Icons.home_outlined,
-                activeIcon: Icons.home,
-                label: 'Home',
-                index: 0,
-              ),
+      bottomNavigationBar: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Divider(height: 1, color: Theme.of(context).colorScheme.surface),
+          BottomAppBar(
+            color: Theme.of(context).colorScheme.surfaceContainerLowest,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                Expanded(
+                  child: _navItem(
+                    icon: Icons.home_outlined,
+                    activeIcon: Icons.home,
+                    label: 'Home',
+                    index: 0,
+                  ),
+                ),
+                Expanded(
+                  child: _navItem(
+                    icon: Icons.edit_note_outlined,
+                    activeIcon: Icons.edit_note,
+                    label: 'Notes',
+                    index: 1,
+                  ),
+                ),
+                Expanded(
+                  child: const SizedBox(width: 40), // space for the notch/FAB
+                ),
+                Expanded(
+                  child: _navItem(
+                    icon: Icons.calendar_today_outlined,
+                    activeIcon: Icons.calendar_today,
+                    label: 'Calendar',
+                    index: 2,
+                  ),
+                ),
+                Expanded(
+                  child: _navItem(
+                    icon: Icons.more_horiz,
+                    activeIcon: Icons.more_horiz,
+                    label: 'More',
+                    index: 3,
+                  ),
+                ),
+              ],
             ),
-            Expanded(
-              child: _navItem(
-                icon: Icons.edit_note_outlined,
-                activeIcon: Icons.edit_note,
-                label: 'Notes',
-                index: 1,
-              ),
-            ),
-            Expanded(
-              child: const SizedBox(width: 40), // space for the notch/FAB
-            ),
-            Expanded(
-              child: _navItem(
-                icon: Icons.calendar_today_outlined,
-                activeIcon: Icons.calendar_today,
-                label: 'Calendar',
-                index: 2,
-              ),
-            ),
-            Expanded(
-              child: _navItem(
-                icon: Icons.more_horiz,
-                activeIcon: Icons.more_horiz,
-                label: 'More',
-                index: 3,
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -213,7 +219,7 @@ class _AppShellState extends State<AppShell> {
   }) {
     final isSelected = _selectedIndex == index;
     final color = isSelected
-        ? Theme.of(context).colorScheme.primaryContainer
+        ? Theme.of(context).colorScheme.primary
         : Theme.of(context).colorScheme.onSurface;
 
     return GestureDetector(

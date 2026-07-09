@@ -223,11 +223,11 @@ class _PlanEditorScreenState extends State<PlanEditorScreen> {
             ],
           ),
           if (sorted.isEmpty)
-            const Padding(
+            Padding(
               padding: EdgeInsets.symmetric(vertical: 8),
               child: Text(
                 'No times yet. Add one to start building the schedule.',
-                style: TextStyle(color: Colors.grey),
+                style: TextStyle(color: Theme.of(context).colorScheme.outline),
               ),
             ),
           ...sorted.map(
@@ -340,10 +340,10 @@ class _PlanEditorScreenState extends State<PlanEditorScreen> {
                           padding: const EdgeInsets.symmetric(vertical: 4),
                           child: Row(
                             children: [
-                              const Icon(
+                              Icon(
                                 Icons.edit_calendar_outlined,
                                 size: 18,
-                                color: Colors.grey,
+                                color: Theme.of(context).colorScheme.outline,
                               ),
                               const SizedBox(width: 8),
                               Expanded(

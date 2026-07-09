@@ -92,13 +92,19 @@ class _LoginScreenState extends State<LoginScreen> {
                     const SizedBox(height: 12),
                     Text(
                       _errorMessage!,
-                      style: const TextStyle(color: Colors.red),
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.error,
+                      ),
                       textAlign: TextAlign.center,
                     ),
                   ],
                   const SizedBox(height: 24),
                   FilledButton(
                     onPressed: _isLoading ? null : _submit,
+                    style: FilledButton.styleFrom(
+                      backgroundColor: Theme.of(context).colorScheme.primary,
+                      foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                    ),
                     child: _isLoading
                         ? const SizedBox(
                             height: 20,

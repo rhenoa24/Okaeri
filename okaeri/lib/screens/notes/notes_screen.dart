@@ -93,7 +93,7 @@ class _NotesGrid extends StatelessWidget {
               child: Text(
                 emptyText,
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: Colors.grey),
+                style: TextStyle(color: Theme.of(context).colorScheme.outline),
               ),
             ),
           );
@@ -179,7 +179,10 @@ class _NoteCard extends StatelessWidget {
               const SizedBox(height: 6),
               Text(
                 '${note.updatedAt.month}/${note.updatedAt.day}/${note.updatedAt.year}',
-                style: const TextStyle(fontSize: 11, color: Colors.grey),
+                style: TextStyle(
+                  fontSize: 11,
+                  color: Theme.of(context).colorScheme.outline,
+                ),
               ),
             ],
           ),

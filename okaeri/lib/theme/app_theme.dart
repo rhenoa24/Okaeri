@@ -19,6 +19,9 @@ class AppTheme {
     // Start from fidelity, override just the surface-related roles
     // with monochrome's neutral values.
     return fidelityScheme.copyWith(
+      primary: fidelityScheme.primaryContainer,
+      onPrimary: fidelityScheme.onPrimaryContainer,
+
       surface: monochromeScheme.surface,
       onSurface: monochromeScheme.onSurface,
       onSurfaceVariant: monochromeScheme.onSurfaceVariant,
@@ -45,7 +48,7 @@ class AppTheme {
     return ThemeData(
       useMaterial3: true,
       colorScheme: scheme,
-      scaffoldBackgroundColor: scheme.surface,
+      scaffoldBackgroundColor: scheme.surfaceContainerLowest,
       // ...rest of your theme config (text theme, appBarTheme, etc.)
     );
   }
@@ -55,7 +58,7 @@ class AppTheme {
     return ThemeData(
       useMaterial3: true,
       colorScheme: scheme,
-      scaffoldBackgroundColor: scheme.surface,
+      scaffoldBackgroundColor: scheme.surfaceContainerLowest,
     );
   }
 }
