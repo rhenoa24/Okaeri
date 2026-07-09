@@ -272,7 +272,7 @@ class _SectionCard extends StatelessWidget {
                   Icon(
                     icon,
                     size: 20,
-                    color: Theme.of(context).colorScheme.primary,
+                    color: Theme.of(context).colorScheme.primaryContainer,
                   ),
                   const SizedBox(width: 8),
                   Text(
@@ -284,7 +284,10 @@ class _SectionCard extends StatelessWidget {
                   ),
                   const Spacer(),
                   if (onTap != null)
-                    const Icon(Icons.chevron_right, color: Colors.grey),
+                    Icon(
+                      Icons.chevron_right,
+                      color: Theme.of(context).colorScheme.outlineVariant,
+                    ),
                 ],
               ),
               const SizedBox(height: 12),

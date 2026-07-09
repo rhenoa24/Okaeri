@@ -49,69 +49,91 @@ class _AppShellState extends State<AppShell> {
   void _showAddActionSheet() {
     showModalBottomSheet(
       context: context,
+      backgroundColor: Theme.of(context).colorScheme.surfaceDim,
       showDragHandle: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) {
         return SafeArea(
-          child: Wrap(
-            children: [
-              ListTile(
-                leading: const Icon(Icons.note_add_outlined),
-                title: const Text('New Note'),
-                subtitle: const Text('Capture thoughts, ideas, or memories.'),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => NoteEditorScreen(
-                        coupleId: widget.coupleId,
-                        initialVisibility:
-                            'shared', // default; user can toggle in editor
+          child: Padding(
+            padding: const EdgeInsets.only(bottom: 30),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ListTile(
+                  leading: Icon(
+                    Icons.note_add_outlined,
+                    color: Theme.of(context).colorScheme.primaryContainer,
+                  ),
+                  title: const Text(
+                    'New Note',
+                    style: TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                  subtitle: const Text('Capture thoughts, ideas, or memories.'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => NoteEditorScreen(
+                          coupleId: widget.coupleId,
+                          initialVisibility: 'shared',
+                        ),
                       ),
-                    ),
-                  );
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.favorite_outline),
-                title: const Text('New Event'),
-                subtitle: const Text('Remember special dates and moments.'),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => EventEditorScreen(
-                        coupleId: widget.coupleId,
-                        initialDate: DateTime.now(),
-                      ),
-                    ),
-                  );
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.alarm),
-                title: const Text('New Plan'),
-                subtitle: const Text(
-                  'Organize dates, activities, and schedules.',
+                    );
+                  },
                 ),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => PlanEditorScreen(
-                        coupleId: widget.coupleId,
-                        initialDate: DateTime.now(),
+                ListTile(
+                  leading: Icon(
+                    Icons.favorite_outline,
+                    color: Theme.of(context).colorScheme.primaryContainer,
+                  ),
+                  title: const Text(
+                    'New Event',
+                    style: TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                  subtitle: const Text('Remember special dates and moments.'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => EventEditorScreen(
+                          coupleId: widget.coupleId,
+                          initialDate: DateTime.now(),
+                        ),
                       ),
-                    ),
-                  );
-                },
-              ),
-            ],
+                    );
+                  },
+                ),
+                ListTile(
+                  leading: Icon(
+                    Icons.alarm,
+                    color: Theme.of(context).colorScheme.primaryContainer,
+                  ),
+                  title: const Text(
+                    'New Plan',
+                    style: TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                  subtitle: const Text(
+                    'Organize dates, activities, and schedules.',
+                  ),
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => PlanEditorScreen(
+                          coupleId: widget.coupleId,
+                          initialDate: DateTime.now(),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
           ),
         );
       },
@@ -192,7 +214,7 @@ class _AppShellState extends State<AppShell> {
     final isSelected = _selectedIndex == index;
     final color = isSelected
         ? Theme.of(context).colorScheme.primaryContainer
-        : Theme.of(context).disabledColor;
+        : Theme.of(context).colorScheme.onSurface;
 
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
