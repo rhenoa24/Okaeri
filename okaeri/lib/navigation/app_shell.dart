@@ -51,84 +51,81 @@ class _AppShellState extends State<AppShell> {
       context: context,
       builder: (context) {
         return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.only(bottom: 30),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                ListTile(
-                  leading: Icon(
-                    Icons.note_add_outlined,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                  title: const Text(
-                    'New Note',
-                    style: TextStyle(fontWeight: FontWeight.w600),
-                  ),
-                  subtitle: const Text('Capture thoughts, ideas, or memories.'),
-                  onTap: () {
-                    Navigator.pop(context);
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => NoteEditorScreen(
-                          coupleId: widget.coupleId,
-                          initialVisibility: 'shared',
-                        ),
-                      ),
-                    );
-                  },
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: Icon(
+                  Icons.note_add_outlined,
+                  color: Theme.of(context).colorScheme.primary,
                 ),
-                ListTile(
-                  leading: Icon(
-                    Icons.favorite_outline,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                  title: const Text(
-                    'New Event',
-                    style: TextStyle(fontWeight: FontWeight.w600),
-                  ),
-                  subtitle: const Text('Remember special dates and moments.'),
-                  onTap: () {
-                    Navigator.pop(context);
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => EventEditorScreen(
-                          coupleId: widget.coupleId,
-                          initialDate: DateTime.now(),
-                        ),
-                      ),
-                    );
-                  },
+                title: const Text(
+                  'New Note',
+                  style: TextStyle(fontWeight: FontWeight.w600),
                 ),
-                ListTile(
-                  leading: Icon(
-                    Icons.alarm,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                  title: const Text(
-                    'New Plan',
-                    style: TextStyle(fontWeight: FontWeight.w600),
-                  ),
-                  subtitle: const Text(
-                    'Organize dates, activities, and schedules.',
-                  ),
-                  onTap: () {
-                    Navigator.pop(context);
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => PlanEditorScreen(
-                          coupleId: widget.coupleId,
-                          initialDate: DateTime.now(),
-                        ),
+                subtitle: const Text('Capture thoughts, ideas, or memories.'),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => NoteEditorScreen(
+                        coupleId: widget.coupleId,
+                        initialVisibility: 'shared',
                       ),
-                    );
-                  },
+                    ),
+                  );
+                },
+              ),
+              ListTile(
+                leading: Icon(
+                  Icons.favorite_outline,
+                  color: Theme.of(context).colorScheme.primary,
                 ),
-              ],
-            ),
+                title: const Text(
+                  'New Event',
+                  style: TextStyle(fontWeight: FontWeight.w600),
+                ),
+                subtitle: const Text('Remember special dates and moments.'),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => EventEditorScreen(
+                        coupleId: widget.coupleId,
+                        initialDate: DateTime.now(),
+                      ),
+                    ),
+                  );
+                },
+              ),
+              ListTile(
+                leading: Icon(
+                  Icons.alarm,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+                title: const Text(
+                  'New Plan',
+                  style: TextStyle(fontWeight: FontWeight.w600),
+                ),
+                subtitle: const Text(
+                  'Organize dates, activities, and schedules.',
+                ),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => PlanEditorScreen(
+                        coupleId: widget.coupleId,
+                        initialDate: DateTime.now(),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ],
           ),
         );
       },
@@ -144,8 +141,6 @@ class _AppShellState extends State<AppShell> {
         height: 64,
         child: FloatingActionButton(
           onPressed: _showAddActionSheet,
-          shape: const CircleBorder(),
-          backgroundColor: Theme.of(context).colorScheme.primary,
           child: Icon(
             Icons.add,
             size: 30,

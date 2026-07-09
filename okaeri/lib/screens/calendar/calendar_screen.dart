@@ -311,9 +311,10 @@ class _SectionHeader extends StatelessWidget {
         ),
         const Spacer(),
         IconButton(
-          icon: const Icon(Icons.add_circle_outline),
+          icon: const Icon(Icons.add),
           onPressed: onAdd,
           visualDensity: VisualDensity.compact,
+          color: Theme.of(context).colorScheme.primary,
         ),
       ],
     );

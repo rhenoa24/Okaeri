@@ -76,16 +76,20 @@ class _PlansScreenState extends State<PlansScreen>
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) =>
-                PlanEditorScreen(coupleId: widget.coupleId, initialDate: now),
-          ),
-        ),
-        child: const Icon(Icons.add),
-      ),
+      // floatingActionButton: SizedBox(
+      //   width: 64,
+      //   height: 64,
+      //   child: FloatingActionButton(
+      //     onPressed: () => Navigator.push(
+      //       context,
+      //       MaterialPageRoute(
+      //         builder: (_) =>
+      //             PlanEditorScreen(coupleId: widget.coupleId, initialDate: now),
+      //       ),
+      //     ),
+      //     child: const Icon(Icons.add, size: 30),
+      //   ),
+      // ),
     );
   }
 }

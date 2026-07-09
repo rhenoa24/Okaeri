@@ -168,7 +168,10 @@ class _EventEditorScreenState extends State<EventEditorScreen> {
                     width: 20,
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
-                : const Icon(Icons.check),
+                : Icon(
+                    Icons.check,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
             onPressed: _isSaving ? null : _save,
           ),
         ],

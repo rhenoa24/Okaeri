@@ -110,6 +110,12 @@ class AppTheme {
         }),
         dayPeriodBorderSide: BorderSide.none,
       ),
+
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
+        backgroundColor: scheme.primary,
+        foregroundColor: scheme.onPrimary,
+        shape: const CircleBorder(),
+      ),
     );
   }
 

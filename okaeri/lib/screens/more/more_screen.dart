@@ -72,7 +72,12 @@ class _MoreScreenState extends State<MoreScreen> {
                               leading: const Icon(Icons.phone_android),
                               title: const Text("Follow system"),
                               trailing: mode == ThemeMode.system
-                                  ? const Icon(Icons.check)
+                                  ? Icon(
+                                      Icons.check,
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.primary,
+                                    )
                                   : null,
                               onTap: () {
                                 ThemeController.setThemeMode(ThemeMode.system);
@@ -83,7 +88,12 @@ class _MoreScreenState extends State<MoreScreen> {
                               leading: const Icon(Icons.light_mode),
                               title: const Text("Light"),
                               trailing: mode == ThemeMode.light
-                                  ? const Icon(Icons.check)
+                                  ? Icon(
+                                      Icons.check,
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.primary,
+                                    )
                                   : null,
                               onTap: () {
                                 ThemeController.setThemeMode(ThemeMode.light);
@@ -94,7 +104,12 @@ class _MoreScreenState extends State<MoreScreen> {
                               leading: const Icon(Icons.dark_mode),
                               title: const Text("Dark"),
                               trailing: mode == ThemeMode.dark
-                                  ? const Icon(Icons.check)
+                                  ? Icon(
+                                      Icons.check,
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.primary,
+                                    )
                                   : null,
                               onTap: () {
                                 ThemeController.setThemeMode(ThemeMode.dark);

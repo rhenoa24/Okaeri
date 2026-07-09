@@ -70,6 +70,22 @@ class _EventsScreenState extends State<EventsScreen>
           ),
         ],
       ),
+      // floatingActionButton: SizedBox(
+      //   width: 64,
+      //   height: 64,
+      //   child: FloatingActionButton(
+      //     onPressed: () => Navigator.push(
+      //       context,
+      //       MaterialPageRoute(
+      //         builder: (_) => EventEditorScreen(
+      //           coupleId: widget.coupleId,
+      //           initialDate: now,
+      //         ),
+      //       ),
+      //     ),
+      //     child: const Icon(Icons.add, size: 30),
+      //   ),
+      // ),
     );
   }
 }
