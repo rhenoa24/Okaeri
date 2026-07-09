@@ -191,7 +191,7 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
               ),
             ),
 
-            const Divider(height: 1),
+            const Divider(),
 
             Expanded(
               child: Padding(

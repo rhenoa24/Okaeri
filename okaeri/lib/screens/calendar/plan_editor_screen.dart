@@ -363,7 +363,7 @@ class _PlanEditorScreenState extends State<PlanEditorScreen> {
                       ),
                     ),
                   ),
-                  const Divider(height: 1),
+                  const Divider(),
                   _buildTimetableSection(),
                 ],
               ),

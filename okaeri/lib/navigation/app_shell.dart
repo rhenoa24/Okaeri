@@ -162,10 +162,7 @@ class _AppShellState extends State<AppShell> {
       bottomNavigationBar: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Divider(
-            height: 1,
-            color: Theme.of(context).colorScheme.surfaceContainer,
-          ),
+          const Divider(),
           BottomAppBar(
             color: Theme.of(context).colorScheme.surfaceContainerLowest,
             child: Row(

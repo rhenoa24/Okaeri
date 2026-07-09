@@ -65,6 +65,16 @@ class AppTheme {
         shadowColor: scheme.shadow,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),
+
+      dividerTheme: DividerThemeData(
+        color: scheme.surfaceContainer,
+        thickness: 1,
+      ),
+
+      tabBarTheme: TabBarThemeData(
+        dividerColor: scheme.surfaceContainer,
+        dividerHeight: 1,
+      ),
     );
   }
 

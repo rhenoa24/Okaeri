@@ -237,7 +237,7 @@ class _EventEditorScreenState extends State<EventEditorScreen> {
                 ],
               ),
             ),
-            const Divider(height: 1),
+            const Divider(),
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.all(12),

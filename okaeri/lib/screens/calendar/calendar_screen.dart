@@ -244,7 +244,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   titleCentered: true,
                 ),
               ),
-              const Divider(height: 1),
+              const Divider(),
               Expanded(
                 child: ListView(
                   padding: const EdgeInsets.all(16),
