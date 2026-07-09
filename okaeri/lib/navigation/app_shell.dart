@@ -5,6 +5,7 @@ import '../screens/notes/note_editor_screen.dart';
 import '../screens/calendar/calendar_screen.dart';
 import '../screens/calendar/event_editor_screen.dart';
 import '../screens/more/more_screen.dart';
+import '../screens/calendar/plan_editor_screen.dart';
 
 class AppShell extends StatefulWidget {
   final String coupleId;
@@ -85,17 +86,14 @@ class _AppShellState extends State<AppShell> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => Scaffold(
-                        appBar: AppBar(title: const Text('New Plan')),
-                        body: const Center(
-                          child: Text('Plan editor coming soon'),
-                        ),
+                      builder: (_) => PlanEditorScreen(
+                        coupleId: widget.coupleId,
+                        initialDate: DateTime.now(),
                       ),
                     ),
                   );
                 },
               ),
-              const SizedBox(height: 8),
             ],
           ),
         );
