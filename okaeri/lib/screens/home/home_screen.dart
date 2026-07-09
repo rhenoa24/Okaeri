@@ -213,13 +213,11 @@ class _HomeScreenState extends State<HomeScreen> {
                         }
                         return Column(
                           children: [
-                            for (var i = 0; i < cards.length; i++)
-                              Padding(
-                                padding: EdgeInsets.only(
-                                  bottom: i == cards.length - 1 ? 0 : 4,
-                                ),
-                                child: cards[i],
-                              ),
+                            for (var i = 0; i < cards.length; i++) ...[
+                              cards[i],
+                              if (i != cards.length - 1)
+                                const SizedBox(height: 8),
+                            ],
                           ],
                         );
                       },
@@ -228,21 +226,35 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               children: [
+                Divider(
+                  height: 24,
+                  color: Theme.of(context).colorScheme.outlineVariant,
+                ),
                 Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Expanded(
                       child: TextField(
                         controller: _replyController,
                         autofocus: true,
+                        minLines: 1,
+                        maxLines: 4,
+                        textCapitalization: TextCapitalization.sentences,
                         decoration: InputDecoration(
-                          hintText: 'Leave a message...',
+                          hintText: 'Leave a little note...',
                           isDense: true,
+                          filled: true,
+                          fillColor: Theme.of(context)
+                              .colorScheme
+                              .surfaceContainerHighest
+                              .withOpacity(0.4),
                           contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 10,
+                            horizontal: 16,
+                            vertical: 12,
                           ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(20),
+                            borderSide: BorderSide.none,
                           ),
                         ),
                         onSubmitted: (_) => _sendQuickMessage(),
@@ -253,6 +265,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       onPressed: _sendQuickMessage,
                       icon: const Icon(Icons.send, size: 18),
                       visualDensity: VisualDensity.compact,
+                      style: IconButton.styleFrom(
+                        padding: const EdgeInsets.all(12),
+                      ),
                     ),
                   ],
                 ),
