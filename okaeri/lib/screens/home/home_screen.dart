@@ -226,10 +226,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               children: [
-                Divider(
-                  height: 24,
-                  color: Theme.of(context).colorScheme.outlineVariant,
-                ),
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
@@ -244,10 +240,9 @@ class _HomeScreenState extends State<HomeScreen> {
                           hintText: 'Leave a little note...',
                           isDense: true,
                           filled: true,
-                          fillColor: Theme.of(context)
-                              .colorScheme
-                              .surfaceContainerHighest
-                              .withOpacity(0.4),
+                          fillColor: Theme.of(
+                            context,
+                          ).colorScheme.surfaceContainer,
                           contentPadding: const EdgeInsets.symmetric(
                             horizontal: 16,
                             vertical: 12,
@@ -266,7 +261,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       icon: const Icon(Icons.send, size: 18),
                       visualDensity: VisualDensity.compact,
                       style: IconButton.styleFrom(
-                        padding: const EdgeInsets.all(12),
+                        padding: const EdgeInsets.all(20),
                       ),
                     ),
                   ],
@@ -390,14 +385,12 @@ class _SectionCard extends StatelessWidget {
   final String title;
   final Widget child;
   final VoidCallback? onTap;
-  final Widget? trailing;
 
   const _SectionCard({
     required this.icon,
     required this.title,
     required this.child,
     this.onTap,
-    this.trailing,
   });
 
   @override

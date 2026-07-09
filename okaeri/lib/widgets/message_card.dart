@@ -48,7 +48,7 @@ class MessageCard extends StatelessWidget {
       child: Container(
         key: ValueKey(message?.text ?? 'empty-$label'),
         width: double.infinity,
-        padding: const EdgeInsets.fromLTRB(14, 10, 0, 14),
+        padding: const EdgeInsets.fromLTRB(14, 8, 0, 0),
         decoration: BoxDecoration(borderRadius: BorderRadius.circular(14)),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -61,7 +61,7 @@ class MessageCard extends StatelessWidget {
                   child: Text(
                     label.isNotEmpty ? label[0].toUpperCase() : '?',
                     style: TextStyle(
-                      fontSize: 11,
+                      fontSize: 12,
                       fontWeight: FontWeight.bold,
                       color: hasMessage
                           ? (isMe ? scheme.onPrimary : scheme.onSecondary)
@@ -75,10 +75,7 @@ class MessageCard extends StatelessWidget {
                     isMe ? '$label · You' : label,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontWeight: FontWeight.w700,
-                      fontSize: 12.5,
-                    ),
+                    style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
                   ),
                 ),
                 if (hasMessage) ...[
@@ -93,16 +90,11 @@ class MessageCard extends StatelessWidget {
                 ],
               ],
             ),
-            const SizedBox(height: 6),
             Padding(
               padding: const EdgeInsets.only(left: 30),
               child: Text(
                 message?.text ?? 'No message yet',
-                style: TextStyle(
-                  fontSize: 15,
-                  height: 1.35,
-                  fontStyle: FontStyle.italic,
-                ),
+                style: TextStyle(fontSize: 15, fontStyle: FontStyle.italic),
               ),
             ),
           ],
