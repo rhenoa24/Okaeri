@@ -31,21 +31,20 @@ class _MoreScreenState extends State<MoreScreen> {
             },
           ),
 
-          const Divider(),
+          // const Divider(),
 
-          ListTile(
-            leading: const Icon(Icons.palette_outlined),
-            title: const Text('Theme Preview'),
-            subtitle: const Text('Preview generated Material 3 colors'),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const ThemePreviewScreen()),
-              );
-            },
-          ),
-
+          // ListTile(
+          //   leading: const Icon(Icons.palette_outlined),
+          //   title: const Text('Theme Preview'),
+          //   subtitle: const Text('Preview generated Material 3 colors'),
+          //   trailing: const Icon(Icons.chevron_right),
+          //   onTap: () {
+          //     Navigator.push(
+          //       context,
+          //       MaterialPageRoute(builder: (_) => const ThemePreviewScreen()),
+          //     );
+          //   },
+          // ),
           const Divider(),
 
           ValueListenableBuilder<ThemeMode>(
