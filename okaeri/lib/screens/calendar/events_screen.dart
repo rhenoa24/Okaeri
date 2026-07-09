@@ -219,7 +219,10 @@ class _DateTile extends StatelessWidget {
         child: ListTile(
           titleAlignment: ListTileTitleAlignment.titleHeight,
           leading: note.isImportant
-              ? Icon(Icons.favorite, color: Colors.red.shade400)
+              ? Icon(
+                  Icons.favorite,
+                  color: Theme.of(context).colorScheme.primary,
+                )
               : null,
           title: Text(
             note.title,

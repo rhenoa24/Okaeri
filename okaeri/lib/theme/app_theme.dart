@@ -40,6 +40,7 @@ class AppTheme {
 
       // keep fidelity's primary/secondary/tertiary/error roles as-is,
       // since those are the ones you want the seed color's true hue in
+      error: Colors.red,
     );
   }
 

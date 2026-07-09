@@ -38,7 +38,7 @@ class MessageCard extends StatelessWidget {
                     : FontStyle.normal,
                 color: message == null
                     ? Theme.of(context).colorScheme.outline
-                    : Colors.black87,
+                    : Theme.of(context).colorScheme.onSurface,
               ),
             ),
           ],

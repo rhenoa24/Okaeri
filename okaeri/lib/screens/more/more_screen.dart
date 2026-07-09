@@ -114,8 +114,14 @@ class _MoreScreenState extends State<MoreScreen> {
 
           const Divider(),
           ListTile(
-            leading: const Icon(Icons.logout, color: Colors.red),
-            title: const Text('Log out', style: TextStyle(color: Colors.red)),
+            leading: Icon(
+              Icons.logout,
+              color: Theme.of(context).colorScheme.error,
+            ),
+            title: Text(
+              'Log out',
+              style: TextStyle(color: Theme.of(context).colorScheme.error),
+            ),
             onTap: () => FirebaseAuth.instance.signOut(),
           ),
         ],

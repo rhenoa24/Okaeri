@@ -182,7 +182,7 @@ class _PairingScreenState extends State<PairingScreen> {
               const SizedBox(height: 12),
               Text(
                 _errorMessage!,
-                style: const TextStyle(color: Colors.red),
+                style: TextStyle(color: Theme.of(context).colorScheme.error),
                 textAlign: TextAlign.center,
               ),
             ],

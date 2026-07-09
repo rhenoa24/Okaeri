@@ -356,7 +356,10 @@ class _NoteTile extends StatelessWidget {
         onTap: onTap,
         titleAlignment: ListTileTitleAlignment.titleHeight,
         leading: note.isImportant
-            ? Icon(Icons.favorite_rounded, color: Colors.red.shade400)
+            ? Icon(
+                Icons.favorite_rounded,
+                color: Theme.of(context).colorScheme.primary,
+              )
             : null,
         title: Text(
           note.title,

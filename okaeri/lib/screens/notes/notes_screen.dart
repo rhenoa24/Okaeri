@@ -173,7 +173,10 @@ class _NoteCard extends StatelessWidget {
                   _previewText(),
                   maxLines: 5,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontSize: 13, color: Colors.black87),
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
                 ),
               ),
               const SizedBox(height: 6),
