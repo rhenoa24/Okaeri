@@ -15,6 +15,21 @@ class AppShell extends StatefulWidget {
   State<AppShell> createState() => _AppShellState();
 }
 
+// centerDocked doesn't expose a way to nudge the FAB's vertical position,
+// so this wraps it and pushes the resulting offset down by a few pixels.
+class _LoweredCenterDocked extends FloatingActionButtonLocation {
+  const _LoweredCenterDocked(this.dy);
+  final double dy;
+
+  @override
+  Offset getOffset(ScaffoldPrelayoutGeometry scaffoldGeometry) {
+    final Offset original = FloatingActionButtonLocation.centerDocked.getOffset(
+      scaffoldGeometry,
+    );
+    return Offset(original.dx, original.dy + dy);
+  }
+}
+
 class _AppShellState extends State<AppShell> {
   int _selectedIndex =
       0; // maps to _screens below (the + button isn't a screen)
@@ -105,42 +120,55 @@ class _AppShellState extends State<AppShell> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: IndexedStack(index: _selectedIndex, children: _screens),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _showAddActionSheet,
-        shape: const CircleBorder(),
-        child: const Icon(Icons.add),
+      floatingActionButton: SizedBox(
+        width: 64,
+        height: 64,
+        child: FloatingActionButton(
+          onPressed: _showAddActionSheet,
+          shape: const CircleBorder(),
+          backgroundColor: Theme.of(context).colorScheme.primary,
+          child: const Icon(Icons.add, size: 30, color: Colors.white),
+        ),
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      floatingActionButtonLocation: const _LoweredCenterDocked(20),
       bottomNavigationBar: BottomAppBar(
-        shape: const CircularNotchedRectangle(),
-        notchMargin: 8,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            _navItem(
-              icon: Icons.home_outlined,
-              activeIcon: Icons.home,
-              label: 'Home',
-              index: 0,
+            Expanded(
+              child: _navItem(
+                icon: Icons.home_outlined,
+                activeIcon: Icons.home,
+                label: 'Home',
+                index: 0,
+              ),
             ),
-            _navItem(
-              icon: Icons.edit_note_outlined,
-              activeIcon: Icons.edit_note,
-              label: 'Notes',
-              index: 1,
+            Expanded(
+              child: _navItem(
+                icon: Icons.edit_note_outlined,
+                activeIcon: Icons.edit_note,
+                label: 'Notes',
+                index: 1,
+              ),
             ),
-            const SizedBox(width: 40), // space for the notch/FAB
-            _navItem(
-              icon: Icons.calendar_today_outlined,
-              activeIcon: Icons.calendar_today,
-              label: 'Calendar',
-              index: 2,
+            Expanded(
+              child: const SizedBox(width: 40), // space for the notch/FAB
             ),
-            _navItem(
-              icon: Icons.more_horiz,
-              activeIcon: Icons.more_horiz,
-              label: 'More',
-              index: 3,
+            Expanded(
+              child: _navItem(
+                icon: Icons.calendar_today_outlined,
+                activeIcon: Icons.calendar_today,
+                label: 'Calendar',
+                index: 2,
+              ),
+            ),
+            Expanded(
+              child: _navItem(
+                icon: Icons.more_horiz,
+                activeIcon: Icons.more_horiz,
+                label: 'More',
+                index: 3,
+              ),
             ),
           ],
         ),
@@ -157,9 +185,10 @@ class _AppShellState extends State<AppShell> {
     final isSelected = _selectedIndex == index;
     final color = isSelected
         ? Theme.of(context).colorScheme.primary
-        : Colors.grey;
+        : Theme.of(context).disabledColor;
 
-    return InkWell(
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
       onTap: () => _onTabTapped(index),
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 6),
@@ -168,7 +197,14 @@ class _AppShellState extends State<AppShell> {
           children: [
             Icon(isSelected ? activeIcon : icon, color: color),
             const SizedBox(height: 2),
-            Text(label, style: TextStyle(fontSize: 11, color: color)),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 11,
+                color: color,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+              ),
+            ),
           ],
         ),
       ),
