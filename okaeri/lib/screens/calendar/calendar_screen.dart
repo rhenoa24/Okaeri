@@ -81,6 +81,22 @@ class _CalendarScreenState extends State<CalendarScreen> {
     });
   }
 
+  Future<void> _jumpToDate() async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _focusedDay,
+      firstDate: DateTime(2015, 1, 1),
+      lastDate: DateTime(2045, 12, 31),
+    );
+
+    if (picked != null) {
+      setState(() {
+        _selectedDay = picked;
+        _focusedDay = picked;
+      });
+    }
+  }
+
   List<CalendarNote> _notesForDay(DateTime day, List<CalendarNote> allNotes) {
     final dayStr = _formatDate(day);
     final monthDay = dayStr.substring(5);
@@ -178,6 +194,54 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
           return Column(
             children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
+                child: Row(
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.chevron_left),
+                      color: Theme.of(context).colorScheme.outlineVariant,
+                      onPressed: () {
+                        setState(() {
+                          _focusedDay = DateTime(
+                            _focusedDay.year,
+                            _focusedDay.month - 1,
+                          );
+                        });
+                      },
+                    ),
+                    Expanded(
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(8),
+                        onTap: _jumpToDate,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          child: Text(
+                            DateFormat.yMMMM().format(_focusedDay),
+                            textAlign: TextAlign.center,
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.chevron_right),
+                      color: Theme.of(context).colorScheme.outlineVariant,
+                      onPressed: () {
+                        setState(() {
+                          _focusedDay = DateTime(
+                            _focusedDay.year,
+                            _focusedDay.month + 1,
+                          );
+                        });
+                      },
+                    ),
+                  ],
+                ),
+              ),
               TableCalendar<CalendarMarker>(
                 firstDay: DateTime.utc(2015, 1, 1),
                 lastDay: DateTime.utc(2045, 12, 31),
@@ -239,10 +303,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                     shape: BoxShape.circle,
                   ),
                 ),
-                headerStyle: const HeaderStyle(
-                  formatButtonVisible: false,
-                  titleCentered: true,
-                ),
+                headerVisible: false,
               ),
               const Divider(),
               Expanded(
