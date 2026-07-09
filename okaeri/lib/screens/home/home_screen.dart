@@ -9,9 +9,9 @@ import '../../models/plan.dart';
 import '../../services/message_service.dart';
 import '../../services/user_service.dart';
 import '../../services/calendar_service.dart';
-import '../message_board/message_board_screen.dart';
 import '../calendar/events_screen.dart';
 import '../calendar/plans_screen.dart';
+import '../../widgets/message_card.dart';
 
 class HomeScreen extends StatefulWidget {
   final String coupleId;
@@ -76,8 +76,46 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  final TextEditingController _replyController = TextEditingController();
+  bool _showReplyField = false;
+
+  void _sendQuickMessage() async {
+    final text = _replyController.text.trim();
+    if (text.isEmpty) return;
+    await _messageService.setMessage(
+      coupleId: widget.coupleId,
+      partnerId: myId,
+      authorName: myName,
+      text: text,
+    );
+    _replyController.clear();
+    FocusScope.of(context).unfocus();
+    setState(() => _showReplyField = false);
+  }
+
+  List<Widget> _buildMessagePreviewCards() {
+    final entries = <_HomeMessageEntry>[
+      _HomeMessageEntry(name: myName, message: _myMessage, isMe: true),
+      _HomeMessageEntry(
+        name: partnerName,
+        message: _partnerMessage,
+        isMe: false,
+      ),
+    ];
+
+    final visible = entries.where((e) => e.message != null).toList()
+      ..sort((a, b) => a.message!.updatedAt.compareTo(b.message!.updatedAt));
+
+    return visible
+        .map(
+          (e) => MessageCard(label: e.name, message: e.message, isMe: e.isMe),
+        )
+        .toList();
+  }
+
   @override
   void dispose() {
+    _replyController.dispose();
     _mySub?.cancel();
     _partnerSub?.cancel();
     _myNameSub?.cancel();
@@ -85,21 +123,8 @@ class _HomeScreenState extends State<HomeScreen> {
     super.dispose();
   }
 
-  // Whichever message was updated most recently, across both partners
-  Message? get _latestMessage {
-    if (_myMessage == null) return _partnerMessage;
-    if (_partnerMessage == null) return _myMessage;
-    return _myMessage!.updatedAt.isAfter(_partnerMessage!.updatedAt)
-        ? _myMessage
-        : _partnerMessage;
-  }
-
   @override
   Widget build(BuildContext context) {
-    final names = (myName.isEmpty || partnerName.isEmpty)
-        ? 'Welcome home'
-        : 'Welcome home,\n$myName ❤ $partnerName';
-
     return Scaffold(
       appBar: AppBar(
         toolbarHeight: 80,
@@ -128,26 +153,107 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
       ),
+
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          _SectionCard(
-            icon: Icons.mail_outline,
-            title: 'Latest Love Letter',
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => MessageBoardScreen(coupleId: widget.coupleId),
+          Card(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            clipBehavior: Clip.antiAlias,
+            child: ExpansionTile(
+              shape: const Border(),
+              collapsedShape: const Border(),
+              tilePadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 4,
+              ),
+              childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+              trailing: const SizedBox.shrink(),
+              onExpansionChanged: (expanded) {
+                setState(() => _showReplyField = expanded);
+              },
+              title: Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.mail_outline,
+                          size: 20,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                        const SizedBox(width: 8),
+                        const Text(
+                          'Latest Love Letter',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                        const Spacer(),
+                        AnimatedRotation(
+                          turns: _showReplyField ? 0.5 : 0,
+                          duration: const Duration(milliseconds: 200),
+                          child: Icon(
+                            Icons.keyboard_arrow_down,
+                            color: Theme.of(context).colorScheme.outlineVariant,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Builder(
+                      builder: (context) {
+                        final cards = _buildMessagePreviewCards();
+                        if (cards.isEmpty) {
+                          return const _EmptyState(
+                            text: 'No messages yet — write the first one!',
+                          );
+                        }
+                        return Column(children: cards);
+                      },
+                    ),
+                  ],
                 ),
-              );
-            },
-            child: _latestMessage == null
-                ? const _EmptyState(
-                    text: 'No messages yet — write the first one!',
-                  )
-                : _LatestMessagePreview(message: _latestMessage!),
+              ),
+              children: [
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _replyController,
+                        autofocus: true,
+                        decoration: InputDecoration(
+                          hintText: 'Leave a message...',
+                          isDense: true,
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 10,
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                        ),
+                        onSubmitted: (_) => _sendQuickMessage(),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    IconButton.filled(
+                      onPressed: _sendQuickMessage,
+                      icon: const Icon(Icons.send, size: 18),
+                      visualDensity: VisualDensity.compact,
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
+
           const SizedBox(height: 16),
 
           _SectionCard(
@@ -263,12 +369,14 @@ class _SectionCard extends StatelessWidget {
   final String title;
   final Widget child;
   final VoidCallback? onTap;
+  final Widget? trailing;
 
   const _SectionCard({
     required this.icon,
     required this.title,
     required this.child,
     this.onTap,
+    this.trailing,
   });
 
   @override
@@ -311,35 +419,6 @@ class _SectionCard extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-}
-
-class _LatestMessagePreview extends StatelessWidget {
-  final Message message;
-  const _LatestMessagePreview({required this.message});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          message.authorName,
-          style: TextStyle(
-            fontWeight: FontWeight.w600,
-            fontSize: 13,
-            color: Theme.of(context).colorScheme.outline,
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          message.text,
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-          style: const TextStyle(fontSize: 15),
-        ),
-      ],
     );
   }
 }
@@ -449,4 +528,16 @@ class _EmptyState extends StatelessWidget {
       ),
     );
   }
+}
+
+class _HomeMessageEntry {
+  final String name;
+  final Message? message;
+  final bool isMe;
+
+  _HomeMessageEntry({
+    required this.name,
+    required this.message,
+    required this.isMe,
+  });
 }
