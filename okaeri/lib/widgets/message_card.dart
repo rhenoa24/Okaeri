@@ -15,29 +15,31 @@ class MessageCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: TextStyle(
-            fontWeight: FontWeight.w600,
-            fontSize: 13,
-            color: Theme.of(context).colorScheme.outline,
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 4),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              fontWeight: FontWeight.w600,
+              fontSize: 13,
+              color: Theme.of(context).colorScheme.outline,
+            ),
           ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          message?.text ?? 'No message yet',
-          style: TextStyle(
-            fontSize: 15,
-            fontStyle: message == null ? FontStyle.italic : FontStyle.normal,
-            color: message == null
-                ? Theme.of(context).colorScheme.outline
-                : Theme.of(context).colorScheme.onSurface,
+          Text(
+            message?.text ?? 'No message yet',
+            style: TextStyle(
+              fontSize: 15,
+              fontStyle: message == null ? FontStyle.italic : FontStyle.normal,
+              color: message == null
+                  ? Theme.of(context).colorScheme.outline
+                  : Theme.of(context).colorScheme.onSurface,
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

@@ -158,9 +158,6 @@ class _HomeScreenState extends State<HomeScreen> {
         padding: const EdgeInsets.all(16),
         children: [
           Card(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
             clipBehavior: Clip.antiAlias,
             child: ExpansionTile(
               shape: const Border(),
@@ -169,7 +166,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 horizontal: 16,
                 vertical: 4,
               ),
-              childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+              childrenPadding: const EdgeInsets.all(16),
               trailing: const SizedBox.shrink(),
               onExpansionChanged: (expanded) {
                 setState(() => _showReplyField = expanded);
@@ -194,15 +191,15 @@ class _HomeScreenState extends State<HomeScreen> {
                             fontSize: 16,
                           ),
                         ),
-                        const Spacer(),
-                        AnimatedRotation(
-                          turns: _showReplyField ? 0.5 : 0,
-                          duration: const Duration(milliseconds: 200),
-                          child: Icon(
-                            Icons.keyboard_arrow_down,
-                            color: Theme.of(context).colorScheme.outlineVariant,
-                          ),
-                        ),
+                        // const Spacer(),
+                        // AnimatedRotation(
+                        //   turns: _showReplyField ? 0.5 : 0,
+                        //   duration: const Duration(milliseconds: 200),
+                        //   child: Icon(
+                        //     Icons.keyboard_arrow_down,
+                        //     color: Theme.of(context).colorScheme.outlineVariant,
+                        //   ),
+                        // ),
                       ],
                     ),
                     const SizedBox(height: 12),
@@ -214,14 +211,23 @@ class _HomeScreenState extends State<HomeScreen> {
                             text: 'No messages yet — write the first one!',
                           );
                         }
-                        return Column(children: cards);
+                        return Column(
+                          children: [
+                            for (var i = 0; i < cards.length; i++)
+                              Padding(
+                                padding: EdgeInsets.only(
+                                  bottom: i == cards.length - 1 ? 0 : 4,
+                                ),
+                                child: cards[i],
+                              ),
+                          ],
+                        );
                       },
                     ),
                   ],
                 ),
               ),
               children: [
-                const SizedBox(height: 12),
                 Row(
                   children: [
                     Expanded(
