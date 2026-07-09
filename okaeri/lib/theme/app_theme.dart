@@ -52,7 +52,7 @@ class AppTheme {
       colorScheme: scheme,
 
       appBarTheme: AppBarTheme(
-        backgroundColor: scheme.surfaceContainerLowest,
+        backgroundColor: scheme.surface,
         foregroundColor: scheme.onSurface,
         elevation: 0,
         scrolledUnderElevation: 0,
@@ -60,24 +60,21 @@ class AppTheme {
       ),
 
       cardTheme: CardThemeData(
-        color: scheme.surfaceContainer,
+        color: scheme.surfaceDim,
         elevation: 1,
         shadowColor: scheme.shadow,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),
 
-      dividerTheme: DividerThemeData(
-        color: scheme.surfaceContainer,
-        thickness: 1,
-      ),
+      dividerTheme: DividerThemeData(color: scheme.surfaceDim, thickness: 1),
 
       tabBarTheme: TabBarThemeData(
-        dividerColor: scheme.surfaceContainer,
+        dividerColor: scheme.surfaceDim,
         dividerHeight: 1,
       ),
 
       datePickerTheme: DatePickerThemeData(
-        backgroundColor: scheme.surfaceContainer,
+        backgroundColor: scheme.surfaceDim,
         headerBackgroundColor: scheme.primary,
         headerForegroundColor: scheme.onPrimary,
         dayForegroundColor: WidgetStatePropertyAll(scheme.onSurface),
@@ -94,6 +91,24 @@ class AppTheme {
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
         ),
+      ),
+
+      timePickerTheme: TimePickerThemeData(
+        backgroundColor: scheme.surfaceDim,
+        hourMinuteColor: WidgetStateColor.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return scheme.primary;
+          }
+          return scheme.surfaceContainer;
+        }),
+        dialBackgroundColor: scheme.surfaceContainer,
+        dayPeriodColor: WidgetStateColor.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
+            return scheme.primary;
+          }
+          return scheme.surfaceContainer;
+        }),
+        dayPeriodBorderSide: BorderSide.none,
       ),
     );
   }

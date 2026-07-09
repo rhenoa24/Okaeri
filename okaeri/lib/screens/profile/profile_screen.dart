@@ -267,24 +267,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                       ),
                       const SizedBox(height: 20),
-                      OutlinedButton(
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: Colors.red,
-                          side: const BorderSide(color: Colors.red),
-                        ),
-                        onPressed: _isUnpairing
-                            ? null
-                            : () => _confirmUnpair(coupleId),
-                        child: _isUnpairing
-                            ? const SizedBox(
-                                height: 18,
-                                width: 18,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                ),
-                              )
-                            : const Text('Unpair from partner'),
-                      ),
+                      // OutlinedButton(
+                      //   style: OutlinedButton.styleFrom(
+                      //     foregroundColor: Colors.red,
+                      //     side: const BorderSide(color: Colors.red),
+                      //   ),
+                      //   onPressed: _isUnpairing
+                      //       ? null
+                      //       : () => _confirmUnpair(coupleId),
+                      //   child: _isUnpairing
+                      //       ? const SizedBox(
+                      //           height: 18,
+                      //           width: 18,
+                      //           child: CircularProgressIndicator(
+                      //             strokeWidth: 2,
+                      //           ),
+                      //         )
+                      //       : const Text('Unpair from partner'),
+                      // ),
                     ],
                   );
                 },
