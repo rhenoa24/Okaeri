@@ -48,6 +48,7 @@ class _AppShellState extends State<AppShell> {
   void _showAddActionSheet() {
     showModalBottomSheet(
       context: context,
+      showDragHandle: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -126,12 +127,17 @@ class _AppShellState extends State<AppShell> {
         child: FloatingActionButton(
           onPressed: _showAddActionSheet,
           shape: const CircleBorder(),
-          backgroundColor: Theme.of(context).colorScheme.primary,
-          child: const Icon(Icons.add, size: 30, color: Colors.white),
+          backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+          child: Icon(
+            Icons.add,
+            size: 30,
+            color: Theme.of(context).colorScheme.onPrimaryContainer,
+          ),
         ),
       ),
       floatingActionButtonLocation: const _LoweredCenterDocked(20),
       bottomNavigationBar: BottomAppBar(
+        color: Theme.of(context).colorScheme.surfaceContainerLowest,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
@@ -184,7 +190,7 @@ class _AppShellState extends State<AppShell> {
   }) {
     final isSelected = _selectedIndex == index;
     final color = isSelected
-        ? Theme.of(context).colorScheme.primary
+        ? Theme.of(context).colorScheme.primaryContainer
         : Theme.of(context).disabledColor;
 
     return GestureDetector(
