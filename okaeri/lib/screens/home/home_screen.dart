@@ -101,20 +101,36 @@ class _HomeScreenState extends State<HomeScreen> {
         : 'Welcome home,\n$myName ❤ $partnerName';
 
     return Scaffold(
-      appBar: AppBar(title: const Text('🏡 Okaeri'), centerTitle: false),
+      appBar: AppBar(
+        toolbarHeight: 80,
+        titleSpacing: 16,
+        title: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Welcome home!',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: Theme.of(context).colorScheme.primary,
+              ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              (myName.isEmpty || partnerName.isEmpty)
+                  ? 'Let\'s get started ❤'
+                  : '$myName ❤ $partnerName',
+              style: Theme.of(
+                context,
+              ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
+      ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          Text(
-            names,
-            style: const TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-              height: 1.3,
-            ),
-          ),
-          const SizedBox(height: 24),
-
           _SectionCard(
             icon: Icons.mail_outline,
             title: 'Latest Love Letter',

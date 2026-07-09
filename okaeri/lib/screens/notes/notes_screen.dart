@@ -40,8 +40,8 @@ class _NotesScreenState extends State<NotesScreen>
         bottom: TabBar(
           controller: _tabController,
           tabs: const [
-            Tab(text: '🏡 Our Room'),
-            Tab(text: '🌙 My Corner'),
+            Tab(text: 'Our Room'),
+            Tab(text: 'My Corner'),
           ],
         ),
       ),
