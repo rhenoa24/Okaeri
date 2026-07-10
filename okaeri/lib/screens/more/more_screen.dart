@@ -51,7 +51,11 @@ class _MoreScreenState extends State<MoreScreen> {
             valueListenable: ThemeController.themeMode,
             builder: (context, mode, _) {
               return ListTile(
-                leading: const Icon(Icons.dark_mode_outlined),
+                leading: Icon(switch (mode) {
+                  ThemeMode.system => Icons.phone_android,
+                  ThemeMode.light => Icons.light_mode,
+                  ThemeMode.dark => Icons.dark_mode,
+                }),
                 title: const Text("Theme"),
                 subtitle: Text(switch (mode) {
                   ThemeMode.system => "Follow system",
