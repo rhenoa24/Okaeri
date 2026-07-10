@@ -196,14 +196,14 @@ class _AppShellState extends State<AppShell> {
             ),
 
             Positioned(
-              top: -20,
+              top: -25,
               child: SizedBox(
                 width: 64,
                 height: 64,
                 child: Material(
                   color: Theme.of(context).colorScheme.primary,
                   shape: const CircleBorder(),
-                  elevation: 6,
+                  elevation: 3,
                   child: InkWell(
                     customBorder: const CircleBorder(),
                     onTap: _showAddActionSheet,

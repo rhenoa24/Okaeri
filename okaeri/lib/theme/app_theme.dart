@@ -32,11 +32,14 @@ class AppTheme {
       surfaceContainerHigh: monochromeScheme.surfaceContainerHigh,
       surfaceContainerHighest: monochromeScheme.surfaceContainerHighest,
 
-      surfaceDim: monochromeScheme.surfaceDim,
       surfaceBright: monochromeScheme.surfaceBright,
-
       outline: monochromeScheme.outline,
       outlineVariant: monochromeScheme.outlineVariant,
+
+      surfaceDim: brightness == Brightness.light
+          ? fidelityScheme
+                .surface // custom light-only shadow
+          : monochromeScheme.surfaceDim,
 
       // keep fidelity's primary/secondary/tertiary/error roles as-is,
       // since those are the ones you want the seed color's true hue in
@@ -66,7 +69,10 @@ class AppTheme {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),
 
-      dividerTheme: DividerThemeData(color: scheme.surfaceDim, thickness: 1),
+      dividerTheme: DividerThemeData(
+        color: scheme.surfaceContainer,
+        thickness: 1,
+      ),
 
       tabBarTheme: TabBarThemeData(
         dividerColor: scheme.surfaceDim,
