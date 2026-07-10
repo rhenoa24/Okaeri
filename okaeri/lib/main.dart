@@ -7,7 +7,6 @@ import 'navigation/auth_gate.dart';
 import 'theme/app_theme.dart';
 import 'theme/theme_controller.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
-import 'services/notification_service.dart';
 
 void main() async {
   final widgetsBinding = WidgetsFlutterBinding.ensureInitialized();

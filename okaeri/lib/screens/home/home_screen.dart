@@ -77,7 +77,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   final TextEditingController _replyController = TextEditingController();
-  bool _showReplyField = false;
 
   void _sendQuickMessage() async {
     final text = _replyController.text.trim();
@@ -90,7 +89,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
     _replyController.clear();
     FocusScope.of(context).unfocus();
-    setState(() => _showReplyField = false);
   }
 
   List<Widget> _buildMessagePreviewCards() {
@@ -168,9 +166,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               childrenPadding: const EdgeInsets.all(16),
               trailing: const SizedBox.shrink(),
-              onExpansionChanged: (expanded) {
-                setState(() => _showReplyField = expanded);
-              },
+              onExpansionChanged: (expanded) {},
               title: Padding(
                 padding: const EdgeInsets.only(top: 8),
                 child: Column(

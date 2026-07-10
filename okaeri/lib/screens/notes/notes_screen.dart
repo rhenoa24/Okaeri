@@ -21,7 +21,6 @@ class _NotesScreenState extends State<NotesScreen>
   late final String myId;
 
   final TextEditingController _searchController = TextEditingController();
-  String _search = "";
 
   @override
   void initState() {
