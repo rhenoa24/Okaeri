@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../../models/note.dart';
 import '../../services/notes_service.dart';
 import 'note_editor_screen.dart';
+import '../../widgets/search_bar.dart';
 
 class NotesScreen extends StatefulWidget {
   final String coupleId;
@@ -134,34 +135,9 @@ class _NotesGridState extends State<_NotesGrid> {
           children: [
             Padding(
               padding: const EdgeInsets.all(12),
-              child: SearchBar(
-                shape: WidgetStatePropertyAll(
-                  RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-                overlayColor: const WidgetStatePropertyAll(Colors.transparent),
-                shadowColor: const WidgetStatePropertyAll(Colors.transparent),
-                backgroundColor: WidgetStatePropertyAll(Colors.transparent),
+              child: OkaeriSearchBar(
                 controller: _searchController,
                 hintText: 'Search notes...',
-                hintStyle: WidgetStatePropertyAll(
-                  TextStyle(color: Theme.of(context).colorScheme.outline),
-                ),
-                leading: const Icon(Icons.search),
-                trailing: _search.isNotEmpty
-                    ? [
-                        IconButton(
-                          icon: const Icon(Icons.close),
-                          onPressed: () {
-                            _searchController.clear();
-                            setState(() {
-                              _search = '';
-                            });
-                          },
-                        ),
-                      ]
-                    : null,
                 onChanged: (value) {
                   setState(() {
                     _search = value;

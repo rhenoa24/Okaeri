@@ -4,6 +4,7 @@ import '../../models/calendar_note.dart';
 import '../../services/calendar_service.dart';
 import '../../utils/quill_text.dart';
 import 'event_editor_screen.dart';
+import '../../widgets/search_bar.dart';
 
 String _daysUntilLabel(DateTime target, DateTime from) {
   final t = DateTime(target.year, target.month, target.day);
@@ -90,7 +91,7 @@ class _EventsScreenState extends State<EventsScreen>
   }
 }
 
-class _DateListTab extends StatelessWidget {
+class _DateListTab extends StatefulWidget {
   final String coupleId;
   final DateTime now;
   final bool importantOnly;
@@ -102,45 +103,81 @@ class _DateListTab extends StatelessWidget {
   });
 
   @override
+  State<_DateListTab> createState() => _DateListTabState();
+}
+
+class _DateListTabState extends State<_DateListTab> {
+  final TextEditingController _searchController = TextEditingController();
+  String _search = '';
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final calendarService = CalendarService();
 
     return StreamBuilder<List<CalendarNote>>(
-      stream: calendarService.watchAllNotes(coupleId),
+      stream: calendarService.watchAllNotes(widget.coupleId),
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
           return const Center(child: CircularProgressIndicator());
         }
 
-        final notes = snapshot.data!;
-        final filtered = importantOnly
-            ? notes.where((n) => n.isImportant).toList()
-            : notes;
+        final query = _search.toLowerCase().trim();
 
-        if (filtered.isEmpty) {
-          return Center(
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: Text(
-                importantOnly
-                    ? 'No important dates marked yet.\nMark a note as important from the Calendar tab.'
-                    : 'No events yet.\nCreate one from the Calendar tab.',
-                textAlign: TextAlign.center,
-                style: TextStyle(color: Theme.of(context).colorScheme.outline),
+        var notes = widget.importantOnly
+            ? snapshot.data!.where((n) => n.isImportant).toList()
+            : snapshot.data!;
+
+        if (query.isNotEmpty) {
+          notes = notes.where((note) {
+            return note.title.toLowerCase().contains(query) ||
+                extractPlainText(
+                  note.contentJson,
+                ).toLowerCase().contains(query);
+          }).toList();
+        }
+
+        if (notes.isEmpty) {
+          return Column(
+            children: [
+              _buildSearchBar(context),
+              Expanded(
+                child: Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Text(
+                      _search.isEmpty
+                          ? (widget.importantOnly
+                                ? 'No important dates marked yet.\nMark a note as important from the Calendar tab.'
+                                : 'No events yet.\nCreate one from the Calendar tab.')
+                          : 'No matching events found.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.outline,
+                      ),
+                    ),
+                  ),
+                ),
               ),
-            ),
+            ],
           );
         }
 
-        final withOccurrence = filtered
-            .map((n) => (note: n, next: n.nextOccurrence(now)))
+        final withOccurrence = notes
+            .map((n) => (note: n, next: n.nextOccurrence(widget.now)))
             .toList();
 
         final upcoming =
             withOccurrence
                 .where(
-                  (e) =>
-                      !e.next.isBefore(DateTime(now.year, now.month, now.day)),
+                  (e) => !e.next.isBefore(
+                    DateTime(widget.now.year, widget.now.month, widget.now.day),
+                  ),
                 )
                 .toList()
               ..sort((a, b) => a.next.compareTo(b.next));
@@ -148,53 +185,79 @@ class _DateListTab extends StatelessWidget {
         final past =
             withOccurrence
                 .where(
-                  (e) =>
-                      e.next.isBefore(DateTime(now.year, now.month, now.day)),
+                  (e) => e.next.isBefore(
+                    DateTime(widget.now.year, widget.now.month, widget.now.day),
+                  ),
                 )
                 .toList()
               ..sort((a, b) => b.next.compareTo(a.next));
 
-        return ListView(
-          padding: const EdgeInsets.all(16),
+        return Column(
           children: [
-            if (upcoming.isNotEmpty) ...[
-              const Text(
-                'Upcoming',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+            _buildSearchBar(context),
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                children: [
+                  if (upcoming.isNotEmpty) ...[
+                    const Text(
+                      'Upcoming',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    ...upcoming.map(
+                      (e) => _DateTile(
+                        coupleId: widget.coupleId,
+                        note: e.note,
+                        occurrence: e.next,
+                        now: widget.now,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                  ],
+                  if (past.isNotEmpty) ...[
+                    Text(
+                      'Past',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
+                        color: Theme.of(context).colorScheme.outline,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    ...past.map(
+                      (e) => _DateTile(
+                        coupleId: widget.coupleId,
+                        note: e.note,
+                        occurrence: e.next,
+                        now: widget.now,
+                      ),
+                    ),
+                  ],
+                ],
               ),
-              const SizedBox(height: 8),
-              ...upcoming.map(
-                (e) => _DateTile(
-                  coupleId: coupleId,
-                  note: e.note,
-                  occurrence: e.next,
-                  now: now,
-                ),
-              ),
-              const SizedBox(height: 24),
-            ],
-            if (past.isNotEmpty) ...[
-              Text(
-                'Past',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 15,
-                  color: Theme.of(context).colorScheme.outline,
-                ),
-              ),
-              const SizedBox(height: 8),
-              ...past.map(
-                (e) => _DateTile(
-                  coupleId: coupleId,
-                  note: e.note,
-                  occurrence: e.next,
-                  now: now,
-                ),
-              ),
-            ],
+            ),
           ],
         );
       },
+    );
+  }
+
+  Widget _buildSearchBar(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(12),
+      child: OkaeriSearchBar(
+        controller: _searchController,
+        hintText: 'Search events...',
+        onChanged: (value) {
+          setState(() {
+            _search = value;
+          });
+        },
+      ),
     );
   }
 }
