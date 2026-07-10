@@ -94,7 +94,7 @@ class MessageCard extends StatelessWidget {
               padding: const EdgeInsets.only(left: 30),
               child: Text(
                 message?.text ?? 'No message yet',
-                style: TextStyle(fontSize: 15, fontStyle: FontStyle.italic),
+                style: TextStyle(fontSize: 15),
               ),
             ),
           ],

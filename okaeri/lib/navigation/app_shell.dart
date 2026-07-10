@@ -136,91 +136,120 @@ class _AppShellState extends State<AppShell> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: IndexedStack(index: _selectedIndex, children: _screens),
-      floatingActionButton: SizedBox(
-        width: 64,
-        height: 64,
-        child: FloatingActionButton(
-          onPressed: _showAddActionSheet,
-          child: Icon(
-            Icons.add,
-            size: 30,
-            color: Theme.of(context).colorScheme.onPrimary,
-          ),
-        ),
-      ),
-      floatingActionButtonLocation: const _LoweredCenterDocked(20),
-      bottomNavigationBar: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Divider(),
-          BottomAppBar(
-            color: Theme.of(context).colorScheme.surfaceContainerLowest,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
+      bottomNavigationBar: SafeArea(
+        top: false,
+        child: Stack(
+          clipBehavior: Clip.none,
+          alignment: Alignment.topCenter,
+          children: [
+            Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Expanded(
-                  child: _navItem(
-                    icon: Icons.home_outlined,
-                    activeIcon: Icons.home,
-                    label: 'Home',
-                    index: 0,
-                  ),
-                ),
-                Expanded(
-                  child: _navItem(
-                    icon: Icons.edit_note_outlined,
-                    activeIcon: Icons.edit_note,
-                    label: 'Notes',
-                    index: 1,
-                  ),
-                ),
-                Expanded(
-                  child: const SizedBox(width: 40), // space for the notch/FAB
-                ),
-                Expanded(
-                  child: _navItem(
-                    icon: Icons.calendar_today_outlined,
-                    activeIcon: Icons.calendar_today,
-                    label: 'Calendar',
-                    index: 2,
-                  ),
-                ),
-                Expanded(
-                  child: _navItem(
-                    icon: Icons.more_horiz,
-                    activeIcon: Icons.more_horiz,
-                    label: 'More',
-                    index: 3,
+                const Divider(height: 1),
+                BottomAppBar(
+                  color: Theme.of(context).colorScheme.surfaceContainerLowest,
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: _navItem(
+                          icon: Icons.home_outlined,
+                          activeIcon: Icons.home,
+                          label: 'Home',
+                          index: 0,
+                        ),
+                      ),
+                      Expanded(
+                        child: _navItem(
+                          icon: Icons.edit_note_outlined,
+                          activeIcon: Icons.edit_note,
+                          label: 'Notes',
+                          index: 1,
+                        ),
+                      ),
+
+                      // Space for center button — no icon (blank space keeps
+                      // the label aligned with the others) and no index, since
+                      // this area is just visual space under the FAB, not a
+                      // real tab.
+                      Expanded(child: _navItem(label: 'Create')),
+
+                      Expanded(
+                        child: _navItem(
+                          icon: Icons.calendar_today_outlined,
+                          activeIcon: Icons.calendar_today,
+                          label: 'Calendar',
+                          index: 2,
+                        ),
+                      ),
+                      Expanded(
+                        child: _navItem(
+                          icon: Icons.more_horiz,
+                          activeIcon: Icons.more_horiz,
+                          label: 'More',
+                          index: 3,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
-          ),
-        ],
+
+            Positioned(
+              top: -20,
+              child: SizedBox(
+                width: 64,
+                height: 64,
+                child: Material(
+                  color: Theme.of(context).colorScheme.primary,
+                  shape: const CircleBorder(),
+                  elevation: 6,
+                  child: InkWell(
+                    customBorder: const CircleBorder(),
+                    onTap: _showAddActionSheet,
+                    child: Icon(
+                      Icons.add,
+                      size: 30,
+                      color: Theme.of(context).colorScheme.onPrimary,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
+  // icon/activeIcon/index are optional so this can also render the
+  // placeholder "space for center button" slot: no icon (just blank space
+  // the same size as a real icon, so the label row stays aligned) and no
+  // tap behavior, since that area sits under the floating circle button.
   Widget _navItem({
-    required IconData icon,
-    required IconData activeIcon,
+    IconData? icon,
+    IconData? activeIcon,
     required String label,
-    required int index,
+    int? index,
   }) {
-    final isSelected = _selectedIndex == index;
+    final isSelected = index != null && _selectedIndex == index;
     final color = isSelected
         ? Theme.of(context).colorScheme.primary
         : Theme.of(context).colorScheme.onSurface;
 
+    final iconWidget = icon == null
+        ? const SizedBox(height: 24)
+        : Icon(isSelected ? (activeIcon ?? icon) : icon, color: color);
+
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
-      onTap: () => _onTabTapped(index),
+      onTap: index == null ? null : () => _onTabTapped(index),
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 6),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(isSelected ? activeIcon : icon, color: color),
+            iconWidget,
             const SizedBox(height: 2),
             Text(
               label,
