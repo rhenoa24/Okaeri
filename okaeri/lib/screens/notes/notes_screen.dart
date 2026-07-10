@@ -19,6 +19,9 @@ class _NotesScreenState extends State<NotesScreen>
   late final TabController _tabController;
   late final String myId;
 
+  final TextEditingController _searchController = TextEditingController();
+  String _search = "";
+
   @override
   void initState() {
     super.initState();
@@ -28,6 +31,7 @@ class _NotesScreenState extends State<NotesScreen>
 
   @override
   void dispose() {
+    _searchController.dispose();
     _tabController.dispose();
     super.dispose();
   }
@@ -66,7 +70,7 @@ class _NotesScreenState extends State<NotesScreen>
   }
 }
 
-class _NotesGrid extends StatelessWidget {
+class _NotesGrid extends StatefulWidget {
   final Stream<List<Note>> stream;
   final String coupleId;
   final String emptyText;
@@ -78,38 +82,128 @@ class _NotesGrid extends StatelessWidget {
   });
 
   @override
+  State<_NotesGrid> createState() => _NotesGridState();
+}
+
+class _NotesGridState extends State<_NotesGrid> {
+  final TextEditingController _searchController = TextEditingController();
+  String _search = '';
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  String _extractText(String contentJson) {
+    try {
+      final ops = jsonDecode(contentJson) as List<dynamic>;
+      final buffer = StringBuffer();
+
+      for (final op in ops) {
+        if (op is Map && op['insert'] is String) {
+          buffer.write(op['insert']);
+        }
+      }
+
+      return buffer.toString();
+    } catch (_) {
+      return '';
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return StreamBuilder<List<Note>>(
-      stream: stream,
+      stream: widget.stream,
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
           return const Center(child: CircularProgressIndicator());
         }
-        final notes = snapshot.data!;
-        if (notes.isEmpty) {
-          return Center(
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: Text(
-                emptyText,
-                textAlign: TextAlign.center,
-                style: TextStyle(color: Theme.of(context).colorScheme.outline),
+
+        final query = _search.toLowerCase().trim();
+
+        final notes = snapshot.data!.where((note) {
+          if (query.isEmpty) return true;
+
+          return note.title.toLowerCase().contains(query) ||
+              _extractText(note.contentJson).toLowerCase().contains(query);
+        }).toList();
+
+        return Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: SearchBar(
+                shape: WidgetStatePropertyAll(
+                  RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                overlayColor: const WidgetStatePropertyAll(Colors.transparent),
+                shadowColor: const WidgetStatePropertyAll(Colors.transparent),
+                backgroundColor: WidgetStatePropertyAll(Colors.transparent),
+                controller: _searchController,
+                hintText: 'Search notes...',
+                hintStyle: WidgetStatePropertyAll(
+                  TextStyle(color: Theme.of(context).colorScheme.outline),
+                ),
+                leading: const Icon(Icons.search),
+                trailing: _search.isNotEmpty
+                    ? [
+                        IconButton(
+                          icon: const Icon(Icons.close),
+                          onPressed: () {
+                            _searchController.clear();
+                            setState(() {
+                              _search = '';
+                            });
+                          },
+                        ),
+                      ]
+                    : null,
+                onChanged: (value) {
+                  setState(() {
+                    _search = value;
+                  });
+                },
               ),
             ),
-          );
-        }
-        return GridView.builder(
-          padding: const EdgeInsets.all(12),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            mainAxisSpacing: 12,
-            crossAxisSpacing: 12,
-            childAspectRatio: 0.85,
-          ),
-          itemCount: notes.length,
-          itemBuilder: (context, index) {
-            return _NoteCard(note: notes[index], coupleId: coupleId);
-          },
+            Expanded(
+              child: notes.isEmpty
+                  ? Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(24),
+                        child: Text(
+                          _search.isEmpty
+                              ? widget.emptyText
+                              : 'No matching notes found.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.outline,
+                          ),
+                        ),
+                      ),
+                    )
+                  : GridView.builder(
+                      padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            mainAxisSpacing: 12,
+                            crossAxisSpacing: 12,
+                            childAspectRatio: 0.85,
+                          ),
+                      itemCount: notes.length,
+                      itemBuilder: (context, index) {
+                        return _NoteCard(
+                          note: notes[index],
+                          coupleId: widget.coupleId,
+                        );
+                      },
+                    ),
+            ),
+          ],
         );
       },
     );
