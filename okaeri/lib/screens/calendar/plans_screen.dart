@@ -76,20 +76,6 @@ class _PlansScreenState extends State<PlansScreen>
           ),
         ],
       ),
-      // floatingActionButton: SizedBox(
-      //   width: 64,
-      //   height: 64,
-      //   child: FloatingActionButton(
-      //     onPressed: () => Navigator.push(
-      //       context,
-      //       MaterialPageRoute(
-      //         builder: (_) =>
-      //             PlanEditorScreen(coupleId: widget.coupleId, initialDate: now),
-      //       ),
-      //     ),
-      //     child: const Icon(Icons.add, size: 30),
-      //   ),
-      // ),
     );
   }
 }
@@ -162,7 +148,12 @@ class _PlansListTab extends StatelessWidget {
           ..sort((a, b) => upcomingOnly ? a.compareTo(b) : b.compareTo(a));
 
         return ListView(
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.fromLTRB(
+            16,
+            16,
+            16,
+            16 + MediaQuery.of(context).padding.bottom,
+          ),
           children: sortedDates.map((date) {
             final dayPlans = grouped[date]!;
             return Padding(

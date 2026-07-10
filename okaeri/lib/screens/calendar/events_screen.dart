@@ -197,7 +197,12 @@ class _DateListTabState extends State<_DateListTab> {
             _buildSearchBar(context),
             Expanded(
               child: ListView(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                padding: EdgeInsets.fromLTRB(
+                  16,
+                  0,
+                  16,
+                  16 + MediaQuery.of(context).padding.bottom,
+                ),
                 children: [
                   if (upcoming.isNotEmpty) ...[
                     const Text(
