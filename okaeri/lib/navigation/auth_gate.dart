@@ -6,6 +6,7 @@ import '../services/couple_service.dart';
 import '../screens/auth/login_screen.dart';
 import '../screens/pairing/pairing_screen.dart';
 import 'app_shell.dart';
+import '../services/notification_service.dart';
 
 class AuthGate extends StatelessWidget {
   const AuthGate({super.key});
@@ -36,6 +37,8 @@ class AuthGate extends StatelessWidget {
 
         final user = authSnapshot.data;
         if (user == null) return _reveal(const LoginScreen());
+
+        NotificationService.initialize(user.uid);
 
         return StreamBuilder<String?>(
           stream: coupleService.watchCoupleId(user.uid),

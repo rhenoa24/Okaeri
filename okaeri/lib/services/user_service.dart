@@ -59,4 +59,11 @@ class UserService {
       return e.message ?? 'Failed to change password';
     }
   }
+
+  // For notifications
+  Future<void> updateFcmToken(String uid, String token) async {
+    await _firestore.collection('users').doc(uid).set({
+      'fcmToken': token,
+    }, SetOptions(merge: true));
+  }
 }
