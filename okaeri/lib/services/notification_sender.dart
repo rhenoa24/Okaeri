@@ -19,7 +19,7 @@ class NotificationSender {
   static Future<void> send({
     required String token,
     required String title,
-    required String body,
+    String? body,
   }) async {
     try {
       final response = await http.post(
@@ -28,7 +28,11 @@ class NotificationSender {
           'Content-Type': 'application/json',
           'X-Okaeri-Secret': _sharedSecret,
         },
-        body: jsonEncode({'token': token, 'title': title, 'body': body}),
+        body: jsonEncode({
+          'token': token,
+          'title': title,
+          if (body != null) 'body': body,
+        }),
       );
 
       if (response.statusCode != 200) {

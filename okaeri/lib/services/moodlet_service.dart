@@ -29,7 +29,6 @@ class MoodletService {
       NotificationSender.send(
         token: partnerToken,
         title: moodlet.template.replaceAll('{name}', senderName),
-        body: '',
       );
     }
   }

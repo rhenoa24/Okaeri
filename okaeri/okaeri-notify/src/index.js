@@ -10,7 +10,10 @@ async function getAccessToken(env) {
 	};
 
 	const encode = (obj) =>
-		btoa(JSON.stringify(obj)).replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
+		btoa(JSON.stringify(obj))
+			.replace(/=/g, "")
+			.replace(/\+/g, "-")
+			.replace(/\//g, "_");
 
 	const unsigned = `${encode(header)}.${encode(claim)}`;
 
@@ -36,7 +39,9 @@ async function getAccessToken(env) {
 	);
 
 	const encodedSig = btoa(String.fromCharCode(...new Uint8Array(signature)))
-		.replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
+		.replace(/=/g, "")
+		.replace(/\+/g, "-")
+		.replace(/\//g, "_");
 
 	const jwt = `${unsigned}.${encodedSig}`;
 
@@ -63,33 +68,44 @@ export default {
 
 		const { token, title, body } = await request.json();
 
-		if (!token || !title || !body) {
-			return new Response("Missing fields", { status: 400 });
+		// Only token and title are required
+		if (!token || !title) {
+			return new Response("Missing required fields", { status: 400 });
 		}
 
 		const accessToken = await getAccessToken(env);
+
+		// Build the notification payload
+		const notification = { title };
+
+		if (body && body.trim().length > 0) {
+			notification.body = body;
+		}
 
 		const fcmRes = await fetch(
 			`https://fcm.googleapis.com/v1/projects/${env.FIREBASE_PROJECT_ID}/messages:send`,
 			{
 				method: "POST",
 				headers: {
-					"Authorization": `Bearer ${accessToken}`,
+					Authorization: `Bearer ${accessToken}`,
 					"Content-Type": "application/json",
 				},
 				body: JSON.stringify({
 					message: {
 						token,
-						notification: { title, body },
+						notification,
 					},
 				}),
 			}
 		);
 
 		const result = await fcmRes.json();
+
 		return new Response(JSON.stringify(result), {
 			status: fcmRes.ok ? 200 : 500,
-			headers: { "Content-Type": "application/json" },
+			headers: {
+				"Content-Type": "application/json",
+			},
 		});
 	},
 };
