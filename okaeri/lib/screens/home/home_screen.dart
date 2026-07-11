@@ -13,6 +13,10 @@ import '../calendar/events_screen.dart';
 import '../calendar/plans_screen.dart';
 import '../../widgets/message_card.dart';
 import '../../services/notification_sender.dart';
+import '../../services/moodlet_service.dart';
+import '../../widgets/mood_card.dart';
+import '../../widgets/moodlet_sheet.dart';
+import '../../models/moodlet.dart';
 
 class HomeScreen extends StatefulWidget {
   final String coupleId;
@@ -23,6 +27,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  // Messages
   final MessageService _messageService = MessageService();
   final UserService _userService = UserService();
   final CalendarService _calendarService = CalendarService();
@@ -40,6 +45,15 @@ class _HomeScreenState extends State<HomeScreen> {
   StreamSubscription<String>? _myNameSub;
   StreamSubscription<String>? _partnerNameSub;
 
+  // Moodlet
+  final MoodletService _moodletService = MoodletService();
+
+  Map<String, dynamic>? _myMood;
+  Map<String, dynamic>? _partnerMood;
+
+  StreamSubscription<Map<String, dynamic>?>? _myMoodSub;
+  StreamSubscription<Map<String, dynamic>?>? _partnerMoodSub;
+
   @override
   void initState() {
     super.initState();
@@ -54,6 +68,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
     _mySub = _messageService.watchMessage(widget.coupleId, myId).listen((msg) {
       setState(() => _myMessage = msg);
+    });
+
+    _myMoodSub = _moodletService.watchMoodlet(myId).listen((mood) {
+      setState(() => _myMood = mood);
     });
 
     final coupleDoc = await FirebaseFirestore.instance
@@ -74,6 +92,9 @@ class _HomeScreenState extends State<HomeScreen> {
           .listen((msg) {
             setState(() => _partnerMessage = msg);
           });
+      _partnerMoodSub = _moodletService.watchMoodlet(partnerId!).listen((mood) {
+        setState(() => _partnerMood = mood);
+      });
     }
   }
 
@@ -125,6 +146,44 @@ class _HomeScreenState extends State<HomeScreen> {
         .toList();
   }
 
+  List<Widget> _buildMoodPreviewCards() {
+    final entries = <_HomeMoodEntry>[
+      _HomeMoodEntry(name: myName, mood: _myMood, isMe: true),
+      _HomeMoodEntry(name: partnerName, mood: _partnerMood, isMe: false),
+    ];
+
+    final visible = entries.where((e) => e.mood != null).toList()
+      ..sort((a, b) {
+        final aTime = a.mood!['updatedAt'] as Timestamp;
+        final bTime = b.mood!['updatedAt'] as Timestamp;
+        return aTime.compareTo(bTime);
+      });
+
+    return visible
+        .map((e) => MoodCard(label: e.name, mood: e.mood, isMe: e.isMe))
+        .toList();
+  }
+
+  Future<void> _pickMood() async {
+    final Moodlet? mood = await showMoodletSheet(context);
+
+    if (mood == null) return;
+
+    String? partnerToken;
+
+    if (partnerId != null && partnerId!.isNotEmpty) {
+      partnerToken = await _userService.getFcmToken(partnerId!);
+    }
+
+    await _moodletService.sendMoodlet(
+      uid: myId,
+      senderName: myName,
+      moodlet: mood,
+      partnerId: partnerId,
+      partnerToken: partnerToken,
+    );
+  }
+
   @override
   void dispose() {
     _replyController.dispose();
@@ -132,6 +191,8 @@ class _HomeScreenState extends State<HomeScreen> {
     _partnerSub?.cancel();
     _myNameSub?.cancel();
     _partnerNameSub?.cancel();
+    _myMoodSub?.cancel();
+    _partnerMoodSub?.cancel();
     super.dispose();
   }
 
@@ -277,6 +338,34 @@ class _HomeScreenState extends State<HomeScreen> {
                   ],
                 ),
               ],
+            ),
+          ),
+
+          const SizedBox(height: 16),
+
+          _SectionCard(
+            icon: Icons.mood,
+            title: 'Latest Moods',
+            onTap: _pickMood,
+            child: Builder(
+              builder: (context) {
+                final cards = _buildMoodPreviewCards();
+
+                if (cards.isEmpty) {
+                  return const _EmptyState(
+                    text: 'No moods yet — tap to share one 💛',
+                  );
+                }
+
+                return Column(
+                  children: [
+                    for (var i = 0; i < cards.length; i++) ...[
+                      cards[i],
+                      if (i != cards.length - 1) const SizedBox(height: 8),
+                    ],
+                  ],
+                );
+              },
             ),
           ),
 
@@ -564,4 +653,12 @@ class _HomeMessageEntry {
     required this.message,
     required this.isMe,
   });
+}
+
+class _HomeMoodEntry {
+  final String name;
+  final Map<String, dynamic>? mood;
+  final bool isMe;
+
+  _HomeMoodEntry({required this.name, required this.mood, required this.isMe});
 }
