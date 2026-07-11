@@ -19,44 +19,50 @@ class _MoodletSheetContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Send a moodlet',
-              style: Theme.of(
-                context,
-              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              'Let your partner know how you\'re feeling',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Theme.of(context).colorScheme.outline,
+    return AnimatedPadding(
+      duration: const Duration(milliseconds: 200),
+      curve: Curves.easeOut,
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom,
+      ),
+      child: SafeArea(
+        top: false,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Send a moodlet',
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
               ),
-            ),
-            const SizedBox(height: 16),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: Moodlet.premade.map((moodlet) {
-                return _MoodletChip(
-                  moodlet: moodlet,
-                  onTap: () => Navigator.of(context).pop(moodlet),
-                );
-              }).toList(),
-            ),
-
-            const SizedBox(height: 20),
-            const Divider(),
-            const SizedBox(height: 12),
-
-            _CustomMoodField(),
-          ],
+              const SizedBox(height: 4),
+              Text(
+                'Let your partner know how you\'re feeling',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Theme.of(context).colorScheme.outline,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: Moodlet.premade.map((moodlet) {
+                  return _MoodletChip(
+                    moodlet: moodlet,
+                    onTap: () => Navigator.of(context).pop(moodlet),
+                  );
+                }).toList(),
+              ),
+              const SizedBox(height: 20),
+              const Divider(),
+              const SizedBox(height: 12),
+              const _CustomMoodField(),
+            ],
+          ),
         ),
       ),
     );
@@ -102,16 +108,36 @@ class _CustomMoodField extends StatefulWidget {
 
 class _CustomMoodFieldState extends State<_CustomMoodField> {
   final _controller = TextEditingController();
+  final _focusNode = FocusNode();
+  final _fieldKey = GlobalKey();
+
+  @override
+  void initState() {
+    super.initState();
+    _focusNode.addListener(() {
+      if (_focusNode.hasFocus) {
+        // Wait for the keyboard animation to finish before scrolling.
+        Future.delayed(const Duration(milliseconds: 300), () {
+          final context = _fieldKey.currentContext;
+          if (context != null) {
+            Scrollable.ensureVisible(
+              context,
+              duration: const Duration(milliseconds: 200),
+              curve: Curves.easeOut,
+              alignment: 1.0, // keep the field at the bottom of the viewport
+            );
+          }
+        });
+      }
+    });
+  }
 
   void _send() {
     var text = _controller.text.trim();
-
     if (text.isEmpty) return;
-
     if (!text.contains('{name}')) {
       text = '{name} $text';
     }
-
     Navigator.of(
       context,
     ).pop(Moodlet(id: 'custom', label: 'Custom', emoji: '💭', template: text));
@@ -120,17 +146,20 @@ class _CustomMoodFieldState extends State<_CustomMoodField> {
   @override
   void dispose() {
     _controller.dispose();
+    _focusNode.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Row(
+      key: _fieldKey,
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
         Expanded(
           child: TextField(
             controller: _controller,
+            focusNode: _focusNode,
             minLines: 1,
             maxLines: 4,
             textCapitalization: TextCapitalization.sentences,
