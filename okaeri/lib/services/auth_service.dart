@@ -1,5 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'notification_service.dart';
+import 'user_service.dart';
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -49,6 +51,12 @@ class AuthService {
   }
 
   Future<void> signOut() async {
+    final uid = _auth.currentUser?.uid;
+    if (uid != null) {
+      await UserService().updateFcmToken(uid, '');
+      // empty string signals "no active token" — or use FieldValue.delete() if you prefer removing the field entirely
+    }
     await _auth.signOut();
+    NotificationService.reset();
   }
 }

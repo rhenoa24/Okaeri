@@ -75,4 +75,11 @@ class UserService {
 
     return doc.data()?['fcmToken'] as String?;
   }
+
+  // Wipe the FCM token before signing out
+  Future<void> clearFcmToken(String uid) async {
+    await _firestore.collection('users').doc(uid).update({
+      'fcmToken': FieldValue.delete(),
+    });
+  }
 }
