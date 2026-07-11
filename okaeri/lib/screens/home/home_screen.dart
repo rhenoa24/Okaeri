@@ -12,6 +12,7 @@ import '../../services/calendar_service.dart';
 import '../calendar/events_screen.dart';
 import '../calendar/plans_screen.dart';
 import '../../widgets/message_card.dart';
+import '../../services/notification_sender.dart';
 
 class HomeScreen extends StatefulWidget {
   final String coupleId;
@@ -87,6 +88,19 @@ class _HomeScreenState extends State<HomeScreen> {
       authorName: myName,
       text: text,
     );
+
+    // Notify the partner, if we know who they are and have their token
+    if (partnerId != null && partnerId!.isNotEmpty) {
+      final partnerToken = await _userService.getFcmToken(partnerId!);
+      if (partnerToken != null) {
+        NotificationSender.send(
+          token: partnerToken,
+          title: '$myName left you a note 💌',
+          body: text,
+        );
+      }
+    }
+
     _replyController.clear();
     FocusScope.of(context).unfocus();
   }
