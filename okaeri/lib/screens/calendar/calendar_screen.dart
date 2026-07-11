@@ -10,6 +10,7 @@ import 'events_screen.dart';
 import 'plans_screen.dart';
 import 'plan_editor_screen.dart';
 import 'event_editor_screen.dart';
+import '../../theme/app_theme.dart';
 
 String _formatDate(DateTime d) =>
     '${d.year.toString().padLeft(4, '0')}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
@@ -289,20 +290,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                     );
                   },
                 ),
-                calendarStyle: CalendarStyle(
-                  markerDecoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primary,
-                    shape: BoxShape.circle,
-                  ),
-                  selectedDecoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primary,
-                    shape: BoxShape.circle,
-                  ),
-                  todayDecoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.surfaceContainer,
-                    shape: BoxShape.circle,
-                  ),
-                ),
+                calendarStyle: AppTheme.calendarStyle(context),
                 headerVisible: false,
               ),
               const Divider(),

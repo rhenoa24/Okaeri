@@ -1,5 +1,6 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'user_service.dart';
+import 'local_notification_service.dart';
 
 class NotificationService {
   static final FirebaseMessaging _messaging = FirebaseMessaging.instance;
@@ -13,6 +14,9 @@ class NotificationService {
 
     // Ask permission
     await _messaging.requestPermission(alert: true, badge: true, sound: true);
+
+    // Set up local notifications (for showing banners while app is open)
+    await LocalNotificationService.initialize();
 
     // Save current token
     final token = await _messaging.getToken();
@@ -28,9 +32,9 @@ class NotificationService {
 
     // Handle notifications that arrive while the app is open (foreground)
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      print('Notification received: ${message.notification?.title}');
-      // TODO: show a local snackbar/dialog, or use flutter_local_notifications
-      // to display a system-style notification while the app is open
+      final title = message.notification?.title ?? 'Okaeri';
+      final body = message.notification?.body ?? '';
+      LocalNotificationService.show(title: title, body: body);
     });
   }
 

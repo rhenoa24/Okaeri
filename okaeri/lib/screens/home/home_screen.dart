@@ -95,7 +95,7 @@ class _HomeScreenState extends State<HomeScreen> {
       if (partnerToken != null) {
         NotificationSender.send(
           token: partnerToken,
-          title: '$myName left you a note 💌',
+          title: '$myName sent you a love letter 💌',
           body: text,
         );
       }

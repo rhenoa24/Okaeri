@@ -44,6 +44,7 @@ dependencies:
   googleapis_auth: ^2.0.0
   http: ^1.6.0
   flutter_native_splash: ^2.4.6
+  flutter_local_notifications: ^22.0.1
 
 dev_dependencies:
   flutter_test:

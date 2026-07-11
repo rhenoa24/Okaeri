@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:table_calendar/table_calendar.dart';
 
 class AppTheme {
   static const _seedColor = Color(0xFFD22C32);
@@ -128,4 +129,25 @@ class AppTheme {
   static ThemeData get lightTheme => _buildTheme(Brightness.light);
 
   static ThemeData get darkTheme => _buildTheme(Brightness.dark);
+
+  static CalendarStyle calendarStyle(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+
+    return CalendarStyle(
+      markerDecoration: BoxDecoration(
+        color: scheme.primary,
+        shape: BoxShape.circle,
+      ),
+      selectedDecoration: BoxDecoration(
+        color: scheme.primary,
+        shape: BoxShape.circle,
+      ),
+      selectedTextStyle: TextStyle(color: scheme.onPrimary),
+      todayDecoration: BoxDecoration(
+        color: scheme.surfaceContainer,
+        shape: BoxShape.circle,
+      ),
+      todayTextStyle: TextStyle(color: scheme.onSurface),
+    );
+  }
 }
