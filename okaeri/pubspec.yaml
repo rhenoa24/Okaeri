@@ -43,6 +43,7 @@ dependencies:
   firebase_messaging: ^16.4.1
   googleapis_auth: ^2.0.0
   http: ^1.6.0
+  flutter_native_splash: ^2.4.6
 
 dev_dependencies:
   flutter_test:
@@ -55,7 +56,7 @@ dev_dependencies:
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
   flutter_launcher_icons: ^0.14.4
-  flutter_native_splash: ^2.4.6
+
 
 # Config for the flutter_launcher_icons package (dev_dependencies above).
 # This is a top-level key, a sibling of dependencies/dev_dependencies/flutter,

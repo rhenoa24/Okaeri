@@ -39,9 +39,6 @@ class MessageCard extends StatelessWidget {
     final accent = hasMessage
         ? (isMe ? scheme.primary : scheme.secondary)
         : scheme.outlineVariant;
-    final fg = hasMessage
-        ? (isMe ? scheme.onPrimaryContainer : scheme.onSecondaryContainer)
-        : scheme.outline;
 
     return AnimatedSwitcher(
       duration: const Duration(milliseconds: 200),

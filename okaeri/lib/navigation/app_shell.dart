@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import '../screens/home/home_screen.dart';
 import '../screens/notes/notes_screen.dart';
 import '../screens/notes/note_editor_screen.dart';
@@ -14,21 +13,6 @@ class AppShell extends StatefulWidget {
 
   @override
   State<AppShell> createState() => _AppShellState();
-}
-
-// centerDocked doesn't expose a way to nudge the FAB's vertical position,
-// so this wraps it and pushes the resulting offset down by a few pixels.
-class _LoweredCenterDocked extends FloatingActionButtonLocation {
-  const _LoweredCenterDocked(this.dy);
-  final double dy;
-
-  @override
-  Offset getOffset(ScaffoldPrelayoutGeometry scaffoldGeometry) {
-    final Offset original = FloatingActionButtonLocation.centerDocked.getOffset(
-      scaffoldGeometry,
-    );
-    return Offset(original.dx, original.dy + dy);
-  }
 }
 
 class _AppShellState extends State<AppShell> {
