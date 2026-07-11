@@ -155,7 +155,12 @@ class _AppShellState extends State<AppShell> {
                       // the label aligned with the others) and no index, since
                       // this area is just visual space under the FAB, not a
                       // real tab.
-                      Expanded(child: _navItem(label: 'Create')),
+                      Expanded(
+                        child: _navItem(
+                          label: 'Create',
+                          onTap: _showAddActionSheet,
+                        ),
+                      ),
 
                       Expanded(
                         child: _navItem(
@@ -215,6 +220,7 @@ class _AppShellState extends State<AppShell> {
     IconData? activeIcon,
     required String label,
     int? index,
+    VoidCallback? onTap,
   }) {
     final isSelected = index != null && _selectedIndex == index;
     final color = isSelected
@@ -225,9 +231,12 @@ class _AppShellState extends State<AppShell> {
         ? const SizedBox(height: 24)
         : Icon(isSelected ? (activeIcon ?? icon) : icon, color: color);
 
+    final tapHandler =
+        onTap ?? (index == null ? null : () => _onTabTapped(index));
+
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
-      onTap: index == null ? null : () => _onTabTapped(index),
+      onTap: tapHandler,
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 6),
         child: Column(
