@@ -49,24 +49,16 @@ class MoodCard extends StatelessWidget {
       child: Container(
         key: ValueKey('$emoji$text'),
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Expanded(
-              flex: 3,
-              child: Text(
-                text,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(fontSize: 14),
-              ),
-            ),
+            Expanded(child: Text(text, style: const TextStyle(fontSize: 14))),
 
             const SizedBox(width: 12),
 
-            if (updatedAt != null)
-              Text(
-                _relativeTime(updatedAt),
-                style: TextStyle(fontSize: 11, color: scheme.outline),
-              ),
+            Text(
+              _relativeTime(updatedAt!),
+              style: TextStyle(fontSize: 12, color: scheme.outline),
+            ),
           ],
         ),
       ),
