@@ -298,11 +298,9 @@ class _ProfileScreenState extends State<ProfileScreen>
   }) {
     return NoteCollectionTab(
       uid: widget.uid,
-      category: NoteCategory.favorite,
-      emptyLabel: widget.isMe
-          ? 'Nothing saved yet — tap + to add a favorite.'
-          : 'No favorites added for $_displayName yet.',
-      onTapNote: (n) => _openNote(NoteCategory.favorite, note: n),
+      category: category,
+      emptyLabel: emptyLabel,
+      onTapNote: (n) => _openNote(category, note: n),
     );
   }
 

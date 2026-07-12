@@ -171,7 +171,7 @@ class _HobbiesRow extends StatelessWidget {
                                 visualDensity: VisualDensity.compact,
                                 backgroundColor: Theme.of(
                                   context,
-                                ).colorScheme.surfaceContainerHigh,
+                                ).colorScheme.surfaceContainer,
                                 side: BorderSide.none,
                               ),
                             )
