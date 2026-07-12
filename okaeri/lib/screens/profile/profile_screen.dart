@@ -10,6 +10,7 @@ import 'profile_note_editor_screen.dart';
 import 'widgets/basic_info_tab.dart';
 import 'widgets/note_collection_tab.dart';
 import 'widgets/profile_header.dart';
+import '../../services/profile_notes_service.dart';
 
 /// Shows a person's profile: avatar + display name (toggle between a plain
 /// read-only view and an edit view), plus three tabs — Basic Info,
@@ -28,6 +29,8 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen>
     with SingleTickerProviderStateMixin {
   final UserService _userService = UserService();
+  final ProfileNotesService _profileNotesService = ProfileNotesService();
+
   final TextEditingController _nameController = TextEditingController();
   final ImagePicker _picker = ImagePicker();
   late final TabController _tabController;
@@ -44,11 +47,6 @@ class _ProfileScreenState extends State<ProfileScreen>
   String _savedName = '';
   String? _savedPhotoBase64;
   ProfileDetails _savedDetails = const ProfileDetails();
-
-  // TODO: replace with a live Firestore stream, e.g.
-  // users/{uid}/profileNotes where category == favorite / note.
-  final List<UserNote> _favorites = [];
-  final List<UserNote> _notes = [];
 
   @override
   void initState() {
@@ -126,28 +124,13 @@ class _ProfileScreenState extends State<ProfileScreen>
   }
 
   Future<void> _openNote(NoteCategory category, {UserNote? note}) async {
-    final result = await Navigator.push<NoteEditorResult>(
+    await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (_) =>
             NoteEditorScreen(uid: widget.uid, category: category, note: note),
       ),
     );
-    if (result == null || !mounted) return;
-
-    final list = category == NoteCategory.favorite ? _favorites : _notes;
-    setState(() {
-      if (result.deletedId != null) {
-        list.removeWhere((n) => n.id == result.deletedId);
-      } else if (result.saved != null) {
-        final i = list.indexWhere((n) => n.id == result.saved!.id);
-        if (i >= 0) {
-          list[i] = result.saved!;
-        } else {
-          list.add(result.saved!);
-        }
-      }
-    });
   }
 
   @override
@@ -252,22 +235,19 @@ class _ProfileScreenState extends State<ProfileScreen>
                         details: _details,
                         onChanged: (d) => setState(() => _details = d),
                       ),
-                      NoteCollectionTab(
+
+                      _buildNotesTab(
                         category: NoteCategory.favorite,
                         emptyLabel: widget.isMe
                             ? 'Nothing saved yet — tap + to add a favorite.'
                             : 'No favorites added for $_displayName yet.',
-                        notes: _favorites,
-                        onTapNote: (n) =>
-                            _openNote(NoteCategory.favorite, note: n),
                       ),
-                      NoteCollectionTab(
+
+                      _buildNotesTab(
                         category: NoteCategory.note,
                         emptyLabel: widget.isMe
                             ? 'Nothing written yet — tap + to add a note.'
-                            : 'No notes written about ${_displayName} yet.',
-                        notes: _notes,
-                        onTapNote: (n) => _openNote(NoteCategory.note, note: n),
+                            : 'No notes written about $_displayName yet.',
                       ),
                     ],
                   ),
@@ -280,6 +260,31 @@ class _ProfileScreenState extends State<ProfileScreen>
               child: const Icon(Icons.add),
             )
           : null,
+    );
+  }
+
+  Widget _buildNotesTab({
+    required NoteCategory category,
+    required String emptyLabel,
+  }) {
+    return StreamBuilder<List<UserNote>>(
+      stream: _profileNotesService.watchNotes(widget.uid, category),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        if (snapshot.hasError) {
+          return Center(child: Text(snapshot.error.toString()));
+        }
+
+        return NoteCollectionTab(
+          category: category,
+          emptyLabel: emptyLabel,
+          notes: snapshot.data ?? const [],
+          onTapNote: (n) => _openNote(category, note: n),
+        );
+      },
     );
   }
 
