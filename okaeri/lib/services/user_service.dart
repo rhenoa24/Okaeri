@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '../models/profile_details.dart';
 
 class UserService {
   final _firestore = FirebaseFirestore.instance;
@@ -103,5 +104,23 @@ class UserService {
     if (data.isEmpty) return;
 
     await FirebaseFirestore.instance.collection('users').doc(uid).update(data);
+  }
+
+  Stream<ProfileDetails> watchProfileDetails(String uid) {
+    return _firestore
+        .collection('users')
+        .doc(uid)
+        .snapshots()
+        .map((doc) => ProfileDetails.fromMap(doc.data()));
+  }
+
+  Future<void> updateProfileDetails({
+    required String uid,
+    required ProfileDetails details,
+  }) async {
+    await _firestore
+        .collection('users')
+        .doc(uid)
+        .set(details.toMap(), SetOptions(merge: true));
   }
 }

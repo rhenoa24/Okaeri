@@ -41,6 +41,8 @@ class _ProfileScreenState extends State<ProfileScreen>
   String? _photoBase64;
   ProfileDetails _details = const ProfileDetails();
 
+  late final Stream<ProfileDetails> _detailsStream;
+
   // Snapshots to revert to if the user cancels out of edit mode.
   String _savedName = '';
   String? _savedPhotoBase64;
@@ -49,6 +51,9 @@ class _ProfileScreenState extends State<ProfileScreen>
   @override
   void initState() {
     super.initState();
+
+    _detailsStream = _userService.watchProfileDetails(widget.uid);
+
     _tabController = TabController(length: 3, vsync: this)
       ..addListener(() {
         if (_tabController.indexIsChanging) return;
@@ -63,13 +68,14 @@ class _ProfileScreenState extends State<ProfileScreen>
     // them (same doc, extra fields) whenever you're ready.
     final name = await _userService.watchDisplayName(widget.uid).first;
     final photo = await _userService.watchPhotoBase64(widget.uid).first;
-    // final details = await _userService.watchProfileDetails(widget.uid).first;
+
+    final details = await _detailsStream.first;
 
     if (!mounted) return;
     setState(() {
       _nameController.text = name;
       _photoBase64 = photo;
-      // _details = details;
+      _details = details;
       _loading = false;
     });
   }
@@ -112,7 +118,8 @@ class _ProfileScreenState extends State<ProfileScreen>
       displayName: _nameController.text.trim(),
       photoBase64: _photoBase64,
     );
-    // TODO: await _userService.updateProfileDetails(uid: widget.uid, details: _details);
+
+    await _userService.updateProfileDetails(uid: widget.uid, details: _details);
 
     if (!mounted) return;
     setState(() {
@@ -228,10 +235,34 @@ class _ProfileScreenState extends State<ProfileScreen>
                   child: TabBarView(
                     controller: _tabController,
                     children: [
-                      BasicInfoTab(
-                        isEditing: _isEditing,
-                        details: _details,
-                        onChanged: (d) => setState(() => _details = d),
+                      StreamBuilder<ProfileDetails>(
+                        stream: _detailsStream,
+                        builder: (context, snapshot) {
+                          if (!snapshot.hasData && !_isEditing) {
+                            return const Center(
+                              child: CircularProgressIndicator(),
+                            );
+                          }
+
+                          // While editing, always show local state so the
+                          // user's in-progress edits aren't clobbered by a
+                          // stream emission (e.g. an echo of a save from
+                          // another screen/device). Otherwise, follow the
+                          // live stream so the read-only view stays fresh.
+                          final details = _isEditing
+                              ? _details
+                              : (snapshot.data ?? _details);
+
+                          return BasicInfoTab(
+                            isEditing: _isEditing,
+                            details: details,
+                            onChanged: (updated) {
+                              // Local only — persistence happens in
+                              // _save() so Cancel/Save behave correctly.
+                              setState(() => _details = updated);
+                            },
+                          );
+                        },
                       ),
 
                       _buildNotesTab(

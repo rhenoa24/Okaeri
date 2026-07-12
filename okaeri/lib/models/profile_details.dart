@@ -96,9 +96,7 @@ class ProfileDetails {
   factory ProfileDetails.fromMap(Map<String, dynamic>? map) {
     if (map == null) return const ProfileDetails();
     return ProfileDetails(
-      birthday: map['birthday'] != null
-          ? DateTime.tryParse(map['birthday'] as String)
-          : null,
+      birthday: (map['birthday'] as dynamic)?.toDate(),
       heightCm: (map['heightCm'] as num?)?.toDouble(),
       weightKg: (map['weightKg'] as num?)?.toDouble(),
       occupation: map['occupation'] as String? ?? '',
@@ -110,7 +108,7 @@ class ProfileDetails {
 
   Map<String, dynamic> toMap() {
     return {
-      'birthday': birthday?.toIso8601String(),
+      'birthday': birthday,
       'heightCm': heightCm,
       'weightKg': weightKg,
       'occupation': occupation,
