@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../profile/profile_screen.dart';
+import 'profile_settings_screen.dart';
 // import '../../theme/theme_preview.dart';
 import '../../theme/theme_controller.dart';
 
@@ -26,7 +26,9 @@ class _MoreScreenState extends State<MoreScreen> {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => const ProfileScreen()),
+                MaterialPageRoute(
+                  builder: (_) => const ProfileSettingsScreen(),
+                ),
               );
             },
           ),

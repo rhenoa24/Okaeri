@@ -17,6 +17,8 @@ import '../../services/moodlet_service.dart';
 import '../../widgets/mood_card.dart';
 import '../../widgets/moodlet_sheet.dart';
 import '../../models/moodlet.dart';
+import '../../widgets/profile_avatar_stack.dart';
+import '../../widgets/profile_sheet.dart';
 
 class HomeScreen extends StatefulWidget {
   final String coupleId;
@@ -37,6 +39,10 @@ class _HomeScreenState extends State<HomeScreen> {
   String partnerName = '';
   String? partnerId;
 
+  // Profile photos (base64), synced the same way myName/partnerName are.
+  String? myPhotoBase64;
+  String? partnerPhotoBase64;
+
   Message? _myMessage;
   Message? _partnerMessage;
 
@@ -44,6 +50,8 @@ class _HomeScreenState extends State<HomeScreen> {
   StreamSubscription<Message?>? _partnerSub;
   StreamSubscription<String>? _myNameSub;
   StreamSubscription<String>? _partnerNameSub;
+  StreamSubscription<String?>? _myPhotoSub;
+  StreamSubscription<String?>? _partnerPhotoSub;
 
   // Moodlet
   final MoodletService _moodletService = MoodletService();
@@ -66,6 +74,10 @@ class _HomeScreenState extends State<HomeScreen> {
       setState(() => myName = name);
     });
 
+    _myPhotoSub = _userService.watchPhotoBase64(myId).listen((photo) {
+      setState(() => myPhotoBase64 = photo);
+    });
+
     _mySub = _messageService.watchMessage(widget.coupleId, myId).listen((msg) {
       setState(() => _myMessage = msg);
     });
@@ -86,6 +98,11 @@ class _HomeScreenState extends State<HomeScreen> {
         name,
       ) {
         setState(() => partnerName = name);
+      });
+      _partnerPhotoSub = _userService.watchPhotoBase64(partnerId!).listen((
+        photo,
+      ) {
+        setState(() => partnerPhotoBase64 = photo);
       });
       _partnerSub = _messageService
           .watchMessage(widget.coupleId, partnerId!)
@@ -191,6 +208,8 @@ class _HomeScreenState extends State<HomeScreen> {
     _partnerSub?.cancel();
     _myNameSub?.cancel();
     _partnerNameSub?.cancel();
+    _myPhotoSub?.cancel();
+    _partnerPhotoSub?.cancel();
     _myMoodSub?.cancel();
     _partnerMoodSub?.cancel();
     super.dispose();
@@ -225,6 +244,25 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ],
         ),
+        actions: [
+          ProfileAvatarStack(
+            myName: myName,
+            myPhotoBase64: myPhotoBase64,
+            partnerName: partnerName,
+            partnerPhotoBase64: partnerPhotoBase64,
+            onTap: () {
+              showProfileSheet(
+                context,
+                myId: myId,
+                myName: myName,
+                myPhotoBase64: myPhotoBase64,
+                partnerId: partnerId ?? '',
+                partnerName: partnerName,
+                partnerPhotoBase64: partnerPhotoBase64,
+              );
+            },
+          ),
+        ],
       ),
 
       body: ListView(

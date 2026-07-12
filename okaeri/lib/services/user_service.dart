@@ -82,4 +82,26 @@ class UserService {
       'fcmToken': FieldValue.delete(),
     });
   }
+
+  // For Base64 photos
+  Stream<String?> watchPhotoBase64(String uid) {
+    return FirebaseFirestore.instance
+        .collection('users')
+        .doc(uid)
+        .snapshots()
+        .map((doc) => doc.data()?['photoBase64'] as String?);
+  }
+
+  Future<void> updateProfile({
+    required String uid,
+    String? displayName,
+    String? photoBase64,
+  }) async {
+    final data = <String, dynamic>{};
+    if (displayName != null) data['displayName'] = displayName;
+    if (photoBase64 != null) data['photoBase64'] = photoBase64;
+    if (data.isEmpty) return;
+
+    await FirebaseFirestore.instance.collection('users').doc(uid).update(data);
+  }
 }

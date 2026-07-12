@@ -1,11 +1,18 @@
+import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/services.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../services/user_service.dart';
-import '../../services/couple_service.dart';
+import '../../widgets/avatar_circle.dart';
 
+/// Shows and edits a single person's profile (Display Name + photo).
+/// [isMe] only affects the title shown — both your own and your partner's
+/// profile are editable here.
 class ProfileScreen extends StatefulWidget {
-  const ProfileScreen({super.key});
+  final String uid;
+  final bool isMe;
+
+  const ProfileScreen({super.key, required this.uid, required this.isMe});
 
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
@@ -13,286 +20,153 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   final UserService _userService = UserService();
-  final CoupleService _coupleService = CoupleService();
-  final _nameController = TextEditingController();
-  final _currentPasswordController = TextEditingController();
-  final _newPasswordController = TextEditingController();
+  final TextEditingController _nameController = TextEditingController();
+  final ImagePicker _picker = ImagePicker();
 
-  bool _isLoadingName = false;
-  bool _isLoadingPassword = false;
-  bool _isUnpairing = false;
-  String? _nameMessage;
-  String? _passwordMessage;
-
-  late final String uid;
+  String? _photoBase64;
+  bool _loading = true;
+  bool _isSaving = false;
 
   @override
   void initState() {
     super.initState();
-    uid = FirebaseAuth.instance.currentUser!.uid;
-    _loadName();
+    _load();
   }
 
-  Future<void> _loadName() async {
-    final name = await _userService.getDisplayName(uid);
-    _nameController.text = name;
-    setState(() {});
-  }
+  Future<void> _load() async {
+    // NOTE: watchDisplayName and watchPhotoBase64 both exist on
+    // UserService now — same shape, different field.
+    final name = await _userService.watchDisplayName(widget.uid).first;
+    final photo = await _userService.watchPhotoBase64(widget.uid).first;
 
-  Future<void> _saveName() async {
+    if (!mounted) return;
     setState(() {
-      _isLoadingName = true;
-      _nameMessage = null;
+      _nameController.text = name;
+      _photoBase64 = photo;
+      _loading = false;
     });
-    final error = await _userService.updateDisplayName(
-      uid,
-      _nameController.text,
+  }
+
+  Future<void> _pickPhoto() async {
+    final XFile? picked = await _picker.pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 512,
+      maxHeight: 512,
+      imageQuality: 80,
     );
+    if (picked == null) return;
+
+    final bytes = await File(picked.path).readAsBytes();
     setState(() {
-      _isLoadingName = false;
-      _nameMessage = error ?? 'Saved!';
+      _photoBase64 = base64Encode(bytes);
     });
   }
 
-  Future<void> _savePassword() async {
-    setState(() {
-      _isLoadingPassword = true;
-      _passwordMessage = null;
-    });
-    final error = await _userService.changePassword(
-      currentPassword: _currentPasswordController.text,
-      newPassword: _newPasswordController.text,
-    );
-    setState(() {
-      _isLoadingPassword = false;
-      _passwordMessage = error ?? 'Password updated!';
-    });
-    if (error == null) {
-      _currentPasswordController.clear();
-      _newPasswordController.clear();
-    }
-  }
+  Future<void> _save() async {
+    setState(() => _isSaving = true);
 
-  Future<void> _confirmUnpair(String coupleId) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Unpair from partner?'),
-        content: const Text(
-          'You and your partner will both be disconnected, and ALL shared '
-          'notes, messages, and calendar entries will be permanently deleted. '
-          'This invite code will also stop working.\n\n'
-          'This cannot be undone.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: Text(
-              'Delete & Unpair',
-              style: TextStyle(color: Theme.of(context).colorScheme.error),
-            ),
-          ),
-        ],
-      ),
+    await _userService.updateProfile(
+      uid: widget.uid,
+      displayName: _nameController.text.trim(),
+      photoBase64: _photoBase64,
     );
 
-    if (confirmed != true) return;
-
-    setState(() => _isUnpairing = true);
-    await _coupleService.unpair(coupleId);
-    // No need to manually navigate — AuthGate's stream will detect
-    // coupleId == null and route back to PairingScreen automatically.
+    if (!mounted) return;
+    setState(() => _isSaving = false);
+    Navigator.pop(context);
   }
 
   @override
   void dispose() {
     _nameController.dispose();
-    _currentPasswordController.dispose();
-    _newPasswordController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Profile & Settings')),
-      body: ListView(
-        padding: const EdgeInsets.all(20),
-        children: [
-          const Text(
-            'Display name',
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 8),
-          TextField(
-            controller: _nameController,
-            decoration: const InputDecoration(border: OutlineInputBorder()),
-          ),
-          if (_nameMessage != null) ...[
-            const SizedBox(height: 6),
-            Text(
-              _nameMessage!,
-              style: TextStyle(
-                color: _nameMessage == 'Saved!' ? Colors.green : Colors.red,
-              ),
-            ),
-          ],
-          const SizedBox(height: 12),
-          FilledButton(
-            onPressed: _isLoadingName ? null : _saveName,
-            child: _isLoadingName
+      appBar: AppBar(
+        title: Text(widget.isMe ? 'My Profile' : "$_partnerTitle's Profile"),
+        actions: [
+          IconButton(
+            icon: _isSaving
                 ? const SizedBox(
-                    height: 18,
-                    width: 18,
+                    height: 20,
+                    width: 20,
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
-                : const Text('Save Name'),
-          ),
-
-          const SizedBox(height: 32),
-          const Divider(),
-          const SizedBox(height: 20),
-
-          const Text(
-            'Change password',
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 8),
-          TextField(
-            controller: _currentPasswordController,
-            obscureText: true,
-            decoration: const InputDecoration(
-              labelText: 'Current password',
-              border: OutlineInputBorder(),
-            ),
-          ),
-          const SizedBox(height: 12),
-          TextField(
-            controller: _newPasswordController,
-            obscureText: true,
-            decoration: const InputDecoration(
-              labelText: 'New password',
-              border: OutlineInputBorder(),
-            ),
-          ),
-          if (_passwordMessage != null) ...[
-            const SizedBox(height: 6),
-            Text(
-              _passwordMessage!,
-              style: TextStyle(
-                color: _passwordMessage == 'Password updated!'
-                    ? Colors.green
-                    : Colors.red,
-              ),
-            ),
-          ],
-          const SizedBox(height: 12),
-          FilledButton(
-            onPressed: _isLoadingPassword ? null : _savePassword,
-            child: _isLoadingPassword
-                ? const SizedBox(
-                    height: 18,
-                    width: 18,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const Text('Update Password'),
-          ),
-
-          const SizedBox(height: 32),
-          const Divider(),
-          const SizedBox(height: 20),
-
-          const Text(
-            'Your Home',
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 8),
-          StreamBuilder<String?>(
-            stream: _coupleService.watchCoupleId(uid),
-            builder: (context, coupleIdSnapshot) {
-              final coupleId = coupleIdSnapshot.data;
-              if (coupleId == null) {
-                return Text(
-                  'Not paired yet.',
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.outline,
+                : Icon(
+                    Icons.check,
+                    color: Theme.of(context).colorScheme.primary,
                   ),
-                );
-              }
-
-              return StreamBuilder<Map<String, dynamic>?>(
-                stream: _coupleService.watchCouple(coupleId),
-                builder: (context, coupleSnapshot) {
-                  final code = coupleSnapshot.data?['inviteCode'] as String?;
-
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+            onPressed: _isSaving ? null : _save,
+          ),
+        ],
+      ),
+      body: _loading
+          ? const Center(child: CircularProgressIndicator())
+          : ListView(
+              padding: const EdgeInsets.all(24),
+              children: [
+                Center(
+                  child: Stack(
+                    clipBehavior: Clip.none,
                     children: [
-                      const Text('Your invite code'),
-                      const SizedBox(height: 8),
-                      InkWell(
-                        onTap: code == null
-                            ? null
-                            : () {
-                                Clipboard.setData(ClipboardData(text: code));
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Copied!')),
-                                );
-                              },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 20,
-                            vertical: 12,
-                          ),
-                          decoration: BoxDecoration(
-                            border: Border.all(
-                              color: Theme.of(
-                                context,
-                              ).colorScheme.outlineVariant,
+                      AvatarCircle(
+                        base64Image: _photoBase64,
+                        name: _nameController.text,
+                        size: 120,
+                        kind: widget.isMe ? AvatarKind.me : AvatarKind.partner,
+                      ),
+                      Positioned(
+                        right: -4,
+                        bottom: -4,
+                        child: InkWell(
+                          onTap: _pickPhoto,
+                          customBorder: const CircleBorder(),
+                          child: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Theme.of(context).colorScheme.primary,
+                              border: Border.all(
+                                color: Theme.of(
+                                  context,
+                                ).scaffoldBackgroundColor,
+                                width: 2,
+                              ),
                             ),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Text(
-                            code ?? '------',
-                            style: const TextStyle(
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 3,
+                            child: const Icon(
+                              Icons.camera_alt,
+                              size: 18,
+                              color: Colors.white,
                             ),
                           ),
                         ),
                       ),
-                      const SizedBox(height: 20),
-                      // OutlinedButton(
-                      //   style: OutlinedButton.styleFrom(
-                      //     foregroundColor: Colors.red,
-                      //     side: const BorderSide(color: Colors.red),
-                      //   ),
-                      //   onPressed: _isUnpairing
-                      //       ? null
-                      //       : () => _confirmUnpair(coupleId),
-                      //   child: _isUnpairing
-                      //       ? const SizedBox(
-                      //           height: 18,
-                      //           width: 18,
-                      //           child: CircularProgressIndicator(
-                      //             strokeWidth: 2,
-                      //           ),
-                      //         )
-                      //       : const Text('Unpair from partner'),
-                      // ),
                     ],
-                  );
-                },
-              );
-            },
-          ),
-        ],
-      ),
+                  ),
+                ),
+                const SizedBox(height: 32),
+                Text(
+                  'Display Name',
+                  style: Theme.of(context).textTheme.labelLarge,
+                ),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: _nameController,
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                    hintText: 'Enter display name',
+                  ),
+                ),
+                const SizedBox(height: 24),
+                // More profile fields (bio, anniversary role, etc.) go here.
+              ],
+            ),
     );
   }
+
+  String get _partnerTitle =>
+      _nameController.text.isEmpty ? 'Partner' : _nameController.text;
 }
