@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../../../../models/user_note.dart';
+import '../../../widgets/search_bar.dart';
 
 /// A searchable list of full (untruncated) note previews. Used for both
 /// the "Favorites" and "Notes" tabs — [category] just controls copy and
@@ -52,31 +53,15 @@ class _NoteCollectionTabState extends State<NoteCollectionTab>
       children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-          child: TextField(
+          child: OkaeriSearchBar(
             controller: _searchController,
-            onChanged: (v) => setState(() => _query = v),
-            decoration: InputDecoration(
-              hintText: 'Search',
-              prefixIcon: const Icon(Icons.search, size: 20),
-              suffixIcon: _query.isEmpty
-                  ? null
-                  : IconButton(
-                      icon: const Icon(Icons.close, size: 18),
-                      onPressed: () {
-                        _searchController.clear();
-                        setState(() => _query = '');
-                      },
-                    ),
-              isDense: true,
-              filled: true,
-              fillColor: Theme.of(context).colorScheme.surfaceContainerHigh,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide.none,
-              ),
-            ),
+            hintText: 'Search',
+            onChanged: (value) {
+              setState(() => _query = value);
+            },
           ),
         ),
+
         Expanded(
           child: filtered.isEmpty
               ? _EmptyNotes(
