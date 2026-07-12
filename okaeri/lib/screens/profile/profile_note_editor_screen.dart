@@ -1,5 +1,10 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_quill/flutter_quill.dart' as quill;
+
 import '../../models/user_note.dart';
+import '../../services/profile_notes_service.dart';
 
 /// Result handed back to the profile screen so it can update its local
 /// list without a full refetch. TODO: once notes are persisted, this can
@@ -28,8 +33,11 @@ class NoteEditorScreen extends StatefulWidget {
 }
 
 class _NoteEditorScreenState extends State<NoteEditorScreen> {
+  final ProfileNotesService _notesService = ProfileNotesService();
+
   late final TextEditingController _titleController;
-  late final TextEditingController _contentController;
+  late quill.QuillController _quillController;
+
   bool _isSaving = false;
 
   bool get _isNew => widget.note == null;
@@ -37,41 +45,55 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
   @override
   void initState() {
     super.initState();
+
     _titleController = TextEditingController(text: widget.note?.title ?? '');
-    _contentController = TextEditingController(
-      text: widget.note?.content ?? '',
-    );
+
+    if (widget.note != null) {
+      try {
+        final document = quill.Document.fromJson(
+          jsonDecode(widget.note!.contentJson),
+        );
+
+        _quillController = quill.QuillController(
+          document: document,
+          selection: const TextSelection.collapsed(offset: 0),
+        );
+      } catch (_) {
+        _quillController = quill.QuillController.basic();
+      }
+    } else {
+      _quillController = quill.QuillController.basic();
+    }
   }
 
   @override
   void dispose() {
     _titleController.dispose();
-    _contentController.dispose();
+    _quillController.dispose();
     super.dispose();
   }
 
   Future<void> _save() async {
-    final title = _titleController.text.trim();
-    final content = _contentController.text.trim();
-    if (title.isEmpty && content.isEmpty) {
-      Navigator.pop(context);
-      return;
-    }
-
     setState(() => _isSaving = true);
 
-    // TODO: persist via a NoteService, e.g.
-    // await NoteService().saveNote(uid: widget.uid, note: note);
+    final title = _titleController.text.trim().isEmpty
+        ? 'Untitled'
+        : _titleController.text.trim();
+
     final note = UserNote(
       id: widget.note?.id ?? DateTime.now().millisecondsSinceEpoch.toString(),
       title: title,
-      content: content,
+      contentJson: jsonEncode(_quillController.document.toDelta().toJson()),
       updatedAt: DateTime.now(),
       category: widget.category,
     );
 
+    await _notesService.saveNote(uid: widget.uid, note: note);
+
     if (!mounted) return;
+
     setState(() => _isSaving = false);
+
     Navigator.pop(context, NoteEditorResult.saved(note));
   }
 
@@ -98,8 +120,7 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
     );
     if (confirmed != true) return;
 
-    // TODO: persist via NoteService, e.g.
-    // await NoteService().deleteNote(uid: widget.uid, id: widget.note!.id);
+    await _notesService.deleteNote(uid: widget.uid, noteId: widget.note!.id);
     if (!mounted) return;
     Navigator.pop(context, NoteEditorResult.deleted(widget.note!.id));
   }
@@ -133,33 +154,48 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
           ),
         ],
       ),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
-        children: [
-          TextField(
-            controller: _titleController,
-            style: Theme.of(
-              context,
-            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-            decoration: const InputDecoration(
-              border: InputBorder.none,
-              hintText: 'Title',
+
+      body: SafeArea(
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: TextField(
+                controller: _titleController,
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+                decoration: const InputDecoration(
+                  hintText: 'Untitled',
+                  border: InputBorder.none,
+                ),
+              ),
             ),
-          ),
-          const Divider(height: 24),
-          TextField(
-            controller: _contentController,
-            maxLines: null,
-            minLines: 8,
-            style: const TextStyle(height: 1.5),
-            decoration: InputDecoration(
-              border: InputBorder.none,
-              hintText: widget.category == NoteCategory.favorite
-                  ? 'Something they love...'
-                  : 'Write something about them...',
+
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(18, 20, 18, 20),
+                child: quill.QuillEditor.basic(controller: _quillController),
+              ),
             ),
-          ),
-        ],
+
+            Material(
+              elevation: 8,
+              color: Theme.of(context).colorScheme.surface,
+              child: SafeArea(
+                top: false,
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 6,
+                  ),
+                  child: quill.QuillSimpleToolbar(controller: _quillController),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

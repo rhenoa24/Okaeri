@@ -1,46 +1,60 @@
+import 'dart:convert';
+
+import 'package:flutter_quill/flutter_quill.dart' as quill;
+
 /// Which tab a note belongs to on someone's profile.
 enum NoteCategory { favorite, note }
 
-/// A single note attached to a profile — used by both the "Favorites" tab
-/// (things they love) and the "Notes" tab (things you've written about
-/// them). Distinct from the "My Corner" private journal notes elsewhere
-/// in the app.
 class UserNote {
   final String id;
   final String title;
-  final String content;
+
+  /// Quill Delta stored as JSON.
+  final String contentJson;
+
   final DateTime updatedAt;
   final NoteCategory category;
 
   const UserNote({
     required this.id,
     required this.title,
-    required this.content,
+    required this.contentJson,
     required this.updatedAt,
     required this.category,
   });
 
-  UserNote copyWith({String? title, String? content, DateTime? updatedAt}) {
+  /// Converts the Quill document into plain text for previews/search.
+  String get plainText {
+    try {
+      final doc = quill.Document.fromJson(jsonDecode(contentJson));
+      return doc.toPlainText().trim();
+    } catch (_) {
+      return '';
+    }
+  }
+
+  UserNote copyWith({
+    String? title,
+    String? contentJson,
+    DateTime? updatedAt,
+    NoteCategory? category,
+  }) {
     return UserNote(
       id: id,
       title: title ?? this.title,
-      content: content ?? this.content,
+      contentJson: contentJson ?? this.contentJson,
       updatedAt: updatedAt ?? this.updatedAt,
-      category: category,
+      category: category ?? this.category,
     );
   }
 
-  // TODO: wire to Firestore, e.g. a subcollection at
-  // users/{uid}/profileNotes/{noteId} with a `category` field.
   factory UserNote.fromMap(String id, Map<String, dynamic> map) {
     return UserNote(
       id: id,
-      title: map['title'] as String? ?? '',
-      content: map['content'] as String? ?? '',
-      updatedAt:
-          DateTime.tryParse(map['updatedAt'] as String? ?? '') ??
-          DateTime.now(),
-      category: (map['category'] as String?) == 'favorite'
+      title: map['title'] ?? '',
+      contentJson: map['contentJson'] ?? '',
+      updatedAt: (map['updatedAt'] as dynamic)?.toDate() ?? DateTime.now(),
+      category: map['category'] == 'favorite'
           ? NoteCategory.favorite
           : NoteCategory.note,
     );
@@ -49,8 +63,8 @@ class UserNote {
   Map<String, dynamic> toMap() {
     return {
       'title': title,
-      'content': content,
-      'updatedAt': updatedAt.toIso8601String(),
+      'contentJson': contentJson,
+      'updatedAt': updatedAt,
       'category': category == NoteCategory.favorite ? 'favorite' : 'note',
     };
   }

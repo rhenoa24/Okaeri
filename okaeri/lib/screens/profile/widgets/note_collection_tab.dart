@@ -46,7 +46,7 @@ class _NoteCollectionTabState extends State<NoteCollectionTab>
       if (_query.isEmpty) return true;
       final q = _query.toLowerCase();
       return n.title.toLowerCase().contains(q) ||
-          n.content.toLowerCase().contains(q);
+          n.plainText.toLowerCase().contains(q);
     }).toList()..sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
 
     return Column(
@@ -94,9 +94,6 @@ class _NoteCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      elevation: 0,
-      color: Theme.of(context).colorScheme.surfaceContainerHigh,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(16),
@@ -127,12 +124,12 @@ class _NoteCard extends StatelessWidget {
                   ),
                 ],
               ),
-              if (note.content.isNotEmpty) ...[
+              if (note.plainText.isNotEmpty) ...[
                 const SizedBox(height: 8),
                 // Intentionally not truncated — the profile screen is
                 // meant to be read in full, unlike home-screen previews.
                 Text(
-                  note.content,
+                  note.plainText,
                   style: TextStyle(
                     fontSize: 14,
                     height: 1.4,
