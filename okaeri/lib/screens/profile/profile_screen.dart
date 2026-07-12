@@ -10,7 +10,6 @@ import 'profile_note_editor_screen.dart';
 import 'widgets/basic_info_tab.dart';
 import 'widgets/note_collection_tab.dart';
 import 'widgets/profile_header.dart';
-import '../../services/profile_notes_service.dart';
 
 /// Shows a person's profile: avatar + display name (toggle between a plain
 /// read-only view and an edit view), plus three tabs — Basic Info,
@@ -29,7 +28,6 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen>
     with SingleTickerProviderStateMixin {
   final UserService _userService = UserService();
-  final ProfileNotesService _profileNotesService = ProfileNotesService();
 
   final TextEditingController _nameController = TextEditingController();
   final ImagePicker _picker = ImagePicker();
@@ -267,24 +265,13 @@ class _ProfileScreenState extends State<ProfileScreen>
     required NoteCategory category,
     required String emptyLabel,
   }) {
-    return StreamBuilder<List<UserNote>>(
-      stream: _profileNotesService.watchNotes(widget.uid, category),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        }
-
-        if (snapshot.hasError) {
-          return Center(child: Text(snapshot.error.toString()));
-        }
-
-        return NoteCollectionTab(
-          category: category,
-          emptyLabel: emptyLabel,
-          notes: snapshot.data ?? const [],
-          onTapNote: (n) => _openNote(category, note: n),
-        );
-      },
+    return NoteCollectionTab(
+      uid: widget.uid,
+      category: NoteCategory.favorite,
+      emptyLabel: widget.isMe
+          ? 'Nothing saved yet — tap + to add a favorite.'
+          : 'No favorites added for $_displayName yet.',
+      onTapNote: (n) => _openNote(NoteCategory.favorite, note: n),
     );
   }
 
