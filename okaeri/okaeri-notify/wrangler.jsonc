@@ -13,7 +13,18 @@
 	"upload_source_maps": true,
 	"compatibility_flags": [
 		"nodejs_compat"
-	]
+	],
+	/**
+	 * Cron Triggers
+	 * Fires the scheduled() handler once a day.
+	 * "0 0 * * *" = midnight UTC = 8am Manila (UTC+8)
+	 * https://developers.cloudflare.com/workers/configuration/cron-triggers/
+	 */
+	"triggers": {
+		"crons": [
+			"0 0 * * *"
+		]
+	}
 	/**
 	 * Smart Placement
 	 * https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement
