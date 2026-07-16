@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'profile_settings_screen.dart';
 // import '../../theme/theme_preview.dart';
 import '../../theme/theme_controller.dart';
+import '../calendar/period_tracker_screen.dart';
 
 class MoreScreen extends StatefulWidget {
   final String coupleId;
@@ -28,6 +29,24 @@ class _MoreScreenState extends State<MoreScreen> {
                 context,
                 MaterialPageRoute(
                   builder: (_) => const ProfileSettingsScreen(),
+                ),
+              );
+            },
+          ),
+
+          const Divider(),
+
+          ListTile(
+            leading: const Icon(Icons.favorite_border),
+            title: const Text('Period Tracker'),
+            subtitle: const Text('Shared cycle log & predictions'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) =>
+                      PeriodTrackerScreen(coupleId: widget.coupleId),
                 ),
               );
             },
