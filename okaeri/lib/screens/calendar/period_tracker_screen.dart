@@ -408,11 +408,11 @@ class _PeriodTrackerScreenState extends State<PeriodTrackerScreen> {
               return ListView(
                 padding: const EdgeInsets.only(bottom: 96),
                 children: [
-                  _SummaryCard(
-                    ongoing: ongoing.isNotEmpty ? ongoing.first : null,
-                    entries: entries,
-                    settings: settings,
-                  ),
+                  // _SummaryCard(
+                  //   ongoing: ongoing.isNotEmpty ? ongoing.first : null,
+                  //   entries: entries,
+                  //   settings: settings,
+                  // ),
                   Padding(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 16,
@@ -608,15 +608,14 @@ class _PeriodTrackerScreenState extends State<PeriodTrackerScreen> {
         );
         break;
       case _DayPhase.ovulation:
-        decoration = const BoxDecoration(
-          color: Colors.teal,
+        decoration = BoxDecoration(
+          color: colorScheme.tertiaryContainer,
           shape: BoxShape.circle,
         );
-        textColor = Colors.white;
         break;
       case _DayPhase.fertile:
         decoration = BoxDecoration(
-          color: Colors.teal.withValues(alpha: 0.22),
+          color: colorScheme.tertiaryContainer.withValues(alpha: 0.22),
           shape: BoxShape.circle,
         );
         break;
@@ -642,74 +641,74 @@ class _PeriodTrackerScreenState extends State<PeriodTrackerScreen> {
   }
 }
 
-class _SummaryCard extends StatelessWidget {
-  final PeriodEntry? ongoing;
-  final List<PeriodEntry> entries;
-  final PeriodSettings settings;
+// class _SummaryCard extends StatelessWidget {
+//   final PeriodEntry? ongoing;
+//   final List<PeriodEntry> entries;
+//   final PeriodSettings settings;
 
-  const _SummaryCard({
-    required this.ongoing,
-    required this.entries,
-    required this.settings,
-  });
+//   const _SummaryCard({
+//     required this.ongoing,
+//     required this.entries,
+//     required this.settings,
+//   });
 
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final periodService = PeriodService();
-    final prediction = periodService.predictNextPeriod(
-      entries,
-      settings.avgCycleLength,
-    );
+//     @override
+//     Widget build(BuildContext context) {
+//       final colorScheme = Theme.of(context).colorScheme;
+//       final periodService = PeriodService();
+//       final prediction = periodService.predictNextPeriod(
+//         entries,
+//         settings.avgCycleLength,
+//       );
 
-    String headline;
-    String? subline;
+//       String headline;
+//       String? subline;
 
-    if (ongoing != null) {
-      final day =
-          DateTime.now().difference(DateTime.parse(ongoing!.startDate)).inDays +
-          1;
-      headline = 'Day $day of period';
-      subline =
-          'Started ${DateFormat.yMMMd().format(DateTime.parse(ongoing!.startDate))}';
-    } else if (prediction != null) {
-      final daysUntil = prediction.difference(DateTime.now()).inDays;
-      headline = daysUntil <= 0
-          ? 'Period may be starting soon'
-          : 'Next period in $daysUntil day${daysUntil == 1 ? '' : 's'}';
-      subline = 'Around ${DateFormat.yMMMd().format(prediction)}';
-    } else {
-      headline = 'No cycles logged yet';
-      subline = 'Tap the + button to log your first period';
-    }
+//       if (ongoing != null) {
+//         final day =
+//             DateTime.now().difference(DateTime.parse(ongoing!.startDate)).inDays +
+//             1;
+//         headline = 'Day $day of period';
+//         subline =
+//             'Started ${DateFormat.yMMMd().format(DateTime.parse(ongoing!.startDate))}';
+//       } else if (prediction != null) {
+//         final daysUntil = prediction.difference(DateTime.now()).inDays;
+//         headline = daysUntil <= 0
+//             ? 'Period may be starting soon'
+//             : 'Next period in $daysUntil day${daysUntil == 1 ? '' : 's'}';
+//         subline = 'Around ${DateFormat.yMMMd().format(prediction)}';
+//       } else {
+//         headline = 'No cycles logged yet';
+//         subline = 'Tap the + button to log your first period';
+//       }
 
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-      child: Card(
-        color: colorScheme.primaryContainer.withValues(alpha: 0.4),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                headline,
-                style: const TextStyle(
-                  fontWeight: FontWeight.w700,
-                  fontSize: 18,
-                ),
-              ),
-              if (subline != null) ...[
-                const SizedBox(height: 4),
-                Text(subline, style: TextStyle(color: colorScheme.outline)),
-              ],
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
+//       return Padding(
+//         padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+//         child: Card(
+//           color: colorScheme.primaryContainer.withValues(alpha: 0.4),
+//           child: Padding(
+//             padding: const EdgeInsets.all(16),
+//             child: Column(
+//               crossAxisAlignment: CrossAxisAlignment.start,
+//               children: [
+//                 Text(
+//                   headline,
+//                   style: const TextStyle(
+//                     fontWeight: FontWeight.w700,
+//                     fontSize: 18,
+//                   ),
+//                 ),
+//                 if (subline != null) ...[
+//                   const SizedBox(height: 4),
+//                   Text(subline, style: TextStyle(color: colorScheme.outline)),
+//                 ],
+//               ],
+//             ),
+//           ),
+//         ),
+//       );
+//     }
+// }
 
 class _EntryTile extends StatelessWidget {
   final PeriodEntry entry;
