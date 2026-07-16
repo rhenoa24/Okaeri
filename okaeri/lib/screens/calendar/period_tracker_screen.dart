@@ -85,121 +85,126 @@ class _PeriodTrackerScreenState extends State<PeriodTrackerScreen> {
       builder: (sheetContext) {
         return StatefulBuilder(
           builder: (sheetContext, setSheetState) {
-            return Padding(
-              padding: EdgeInsets.only(
-                left: 20,
-                right: 20,
-                top: 20,
-                bottom: MediaQuery.of(sheetContext).viewInsets.bottom + 20,
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    existing == null ? 'Log Period' : 'Edit Period',
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18,
+            return SafeArea(
+              top: false,
+              child: Padding(
+                padding: EdgeInsets.only(
+                  left: 20,
+                  right: 20,
+                  top: 20,
+                  bottom: MediaQuery.of(sheetContext).viewInsets.bottom + 20,
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      existing == null ? 'Log Period' : 'Edit Period',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    leading: const Icon(Icons.play_circle_outline),
-                    title: const Text('First day'),
-                    subtitle: Text(DateFormat.yMMMd().format(startDate)),
-                    trailing: const Icon(Icons.chevron_right),
-                    onTap: () async {
-                      final picked = await showDatePicker(
-                        context: sheetContext,
-                        initialDate: startDate,
-                        firstDate: DateTime(2015, 1, 1),
-                        lastDate: DateTime(2045, 12, 31),
-                      );
-                      if (picked != null) {
-                        setSheetState(() {
-                          startDate = picked;
-                          if (endDate != null && endDate!.isBefore(startDate)) {
-                            endDate = startDate;
-                          }
-                        });
-                      }
-                    },
-                  ),
-                  SwitchListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: const Text('Still ongoing'),
-                    subtitle: const Text(
-                      "No last day yet — you'll add it later",
-                    ),
-                    value: ongoing,
-                    onChanged: (value) => setSheetState(() => ongoing = value),
-                  ),
-                  if (!ongoing)
+                    const SizedBox(height: 16),
                     ListTile(
                       contentPadding: EdgeInsets.zero,
-                      leading: const Icon(Icons.stop_circle_outlined),
-                      title: const Text('Last day'),
-                      subtitle: Text(
-                        endDate != null
-                            ? DateFormat.yMMMd().format(endDate!)
-                            : 'Not set',
-                      ),
+                      leading: const Icon(Icons.play_circle_outline),
+                      title: const Text('First day'),
+                      subtitle: Text(DateFormat.yMMMd().format(startDate)),
                       trailing: const Icon(Icons.chevron_right),
                       onTap: () async {
                         final picked = await showDatePicker(
                           context: sheetContext,
-                          initialDate: endDate ?? startDate,
-                          firstDate: startDate,
+                          initialDate: startDate,
+                          firstDate: DateTime(2015, 1, 1),
                           lastDate: DateTime(2045, 12, 31),
                         );
                         if (picked != null) {
-                          setSheetState(() => endDate = picked);
+                          setSheetState(() {
+                            startDate = picked;
+                            if (endDate != null &&
+                                endDate!.isBefore(startDate)) {
+                              endDate = startDate;
+                            }
+                          });
                         }
                       },
                     ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      if (existing != null)
-                        TextButton(
-                          onPressed: () async {
-                            Navigator.pop(sheetContext);
-                            await _periodService.deleteEntry(
-                              widget.coupleId,
-                              existing.id,
-                            );
-                          },
-                          child: Text(
-                            'Delete',
-                            style: TextStyle(
-                              color: Theme.of(sheetContext).colorScheme.error,
+                    SwitchListTile(
+                      contentPadding: EdgeInsets.zero,
+                      title: const Text('Still ongoing'),
+                      subtitle: const Text(
+                        "No last day yet — you'll add it later",
+                      ),
+                      value: ongoing,
+                      onChanged: (value) =>
+                          setSheetState(() => ongoing = value),
+                    ),
+                    if (!ongoing)
+                      ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        leading: const Icon(Icons.stop_circle_outlined),
+                        title: const Text('Last day'),
+                        subtitle: Text(
+                          endDate != null
+                              ? DateFormat.yMMMd().format(endDate!)
+                              : 'Not set',
+                        ),
+                        trailing: const Icon(Icons.chevron_right),
+                        onTap: () async {
+                          final picked = await showDatePicker(
+                            context: sheetContext,
+                            initialDate: endDate ?? startDate,
+                            firstDate: startDate,
+                            lastDate: DateTime(2045, 12, 31),
+                          );
+                          if (picked != null) {
+                            setSheetState(() => endDate = picked);
+                          }
+                        },
+                      ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        if (existing != null)
+                          TextButton(
+                            onPressed: () async {
+                              Navigator.pop(sheetContext);
+                              await _periodService.deleteEntry(
+                                widget.coupleId,
+                                existing.id,
+                              );
+                            },
+                            child: Text(
+                              'Delete',
+                              style: TextStyle(
+                                color: Theme.of(sheetContext).colorScheme.error,
+                              ),
                             ),
                           ),
+                        const Spacer(),
+                        TextButton(
+                          onPressed: () => Navigator.pop(sheetContext),
+                          child: const Text('Cancel'),
                         ),
-                      const Spacer(),
-                      TextButton(
-                        onPressed: () => Navigator.pop(sheetContext),
-                        child: const Text('Cancel'),
-                      ),
-                      const SizedBox(width: 8),
-                      FilledButton(
-                        onPressed: (!ongoing && endDate == null)
-                            ? null
-                            : () async {
-                                Navigator.pop(sheetContext);
-                                await _saveEntry(
-                                  existing: existing,
-                                  startDate: startDate,
-                                  endDate: ongoing ? null : endDate,
-                                );
-                              },
-                        child: const Text('Save'),
-                      ),
-                    ],
-                  ),
-                ],
+                        const SizedBox(width: 8),
+                        FilledButton(
+                          onPressed: (!ongoing && endDate == null)
+                              ? null
+                              : () async {
+                                  Navigator.pop(sheetContext);
+                                  await _saveEntry(
+                                    existing: existing,
+                                    startDate: startDate,
+                                    endDate: ongoing ? null : endDate,
+                                  );
+                                },
+                          child: const Text('Save'),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             );
           },
@@ -383,10 +388,7 @@ class _PeriodTrackerScreenState extends State<PeriodTrackerScreen> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _openLogSheet(),
-        child: const Icon(Icons.add),
-      ),
+
       body: StreamBuilder<List<PeriodEntry>>(
         stream: _periodService.watchEntries(widget.coupleId),
         builder: (context, entriesSnap) {
@@ -405,8 +407,7 @@ class _PeriodTrackerScreenState extends State<PeriodTrackerScreen> {
                   const PeriodSettings(avgCycleLength: 28, avgPeriodLength: 5);
               final ongoing = entries.where((e) => e.isOngoing).toList();
 
-              return ListView(
-                padding: const EdgeInsets.only(bottom: 96),
+              return Column(
                 children: [
                   // _SummaryCard(
                   //   ongoing: ongoing.isNotEmpty ? ongoing.first : null,
@@ -488,7 +489,7 @@ class _PeriodTrackerScreenState extends State<PeriodTrackerScreen> {
                   const Divider(height: 1),
                   Padding(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
+                      horizontal: 12,
                       vertical: 12,
                     ),
                     child: Wrap(
@@ -505,9 +506,15 @@ class _PeriodTrackerScreenState extends State<PeriodTrackerScreen> {
                           ).colorScheme.primary.withValues(alpha: 0.25),
                           label: 'Predicted period',
                         ),
-                        _LegendDot(color: Colors.teal, label: 'Ovulation'),
                         _LegendDot(
-                          color: Colors.teal.withValues(alpha: 0.25),
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.tertiaryContainer,
+                          label: 'Ovulation',
+                        ),
+                        _LegendDot(
+                          color: Theme.of(context).colorScheme.tertiaryContainer
+                              .withValues(alpha: 0.25),
                           label: 'Fertile window',
                         ),
                       ],
@@ -535,34 +542,33 @@ class _PeriodTrackerScreenState extends State<PeriodTrackerScreen> {
                       ],
                     ),
                   ),
-                  if (sortedDesc.isEmpty)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 8,
-                      ),
-                      child: Text(
-                        'No periods logged yet.',
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.outline,
-                          fontStyle: FontStyle.italic,
-                        ),
-                      ),
-                    )
-                  else
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: Column(
-                        children: sortedDesc
-                            .map(
-                              (entry) => _EntryTile(
-                                entry: entry,
-                                onTap: () => _openLogSheet(existing: entry),
+                  Expanded(
+                    child: sortedDesc.isEmpty
+                        ? Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 8,
+                            ),
+                            child: Text(
+                              'No periods logged yet.',
+                              style: TextStyle(
+                                color: Theme.of(context).colorScheme.outline,
+                                fontStyle: FontStyle.italic,
                               ),
-                            )
-                            .toList(),
-                      ),
-                    ),
+                            ),
+                          )
+                        : ListView(
+                            padding: const EdgeInsets.fromLTRB(16, 0, 16, 96),
+                            children: sortedDesc
+                                .map(
+                                  (entry) => _EntryTile(
+                                    entry: entry,
+                                    onTap: () => _openLogSheet(existing: entry),
+                                  ),
+                                )
+                                .toList(),
+                          ),
+                  ),
                 ],
               );
             },
