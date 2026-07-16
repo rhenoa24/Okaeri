@@ -92,7 +92,12 @@ class _NoteCollectionTabState extends State<NoteCollectionTab>
                       emptyLabel: widget.emptyLabel,
                     )
                   : ListView.separated(
-                      padding: const EdgeInsets.fromLTRB(16, 4, 16, 96),
+                      padding: EdgeInsets.fromLTRB(
+                        16,
+                        4,
+                        16,
+                        96 + MediaQuery.of(context).padding.bottom,
+                      ),
                       itemCount: filtered.length,
                       separatorBuilder: (_, __) => const SizedBox(height: 10),
                       itemBuilder: (context, index) {

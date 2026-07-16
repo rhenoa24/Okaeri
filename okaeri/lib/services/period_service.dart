@@ -86,6 +86,20 @@ class PeriodService {
     await _entriesRef(coupleId).doc(entryId).delete();
   }
 
+  /// Clears endDate so the entry becomes "ongoing" again — used when the
+  /// person wants to pick a new end day for an already-closed entry.
+  /// Uses `update` (not the merge-style `updateEntry` above) since we need
+  /// to explicitly write `null`, not skip the field.
+  Future<void> reopenEntry({
+    required String coupleId,
+    required String entryId,
+  }) async {
+    await _entriesRef(coupleId).doc(entryId).update({
+      'endDate': null,
+      'updatedAt': Timestamp.fromDate(DateTime.now()),
+    });
+  }
+
   // ---- Settings / predictions ----
 
   Stream<PeriodSettings> watchSettings(String coupleId) {
