@@ -161,7 +161,12 @@ class _NotesGridState extends State<_NotesGrid> {
                       ),
                     )
                   : GridView.builder(
-                      padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+                      padding: EdgeInsets.fromLTRB(
+                        12,
+                        0,
+                        12,
+                        12 + MediaQuery.of(context).padding.bottom,
+                      ),
                       gridDelegate:
                           const SliverGridDelegateWithFixedCrossAxisCount(
                             crossAxisCount: 2,

@@ -45,7 +45,12 @@ class _BasicInfoReadView extends StatelessWidget {
         : DateFormat('MMMM d, yyyy').format(details.birthday!);
 
     return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
+      padding: EdgeInsets.fromLTRB(
+        16,
+        12,
+        16,
+        32 + MediaQuery.of(context).padding.bottom,
+      ),
       children: [
         _InfoRow(
           icon: Icons.cake_outlined,
@@ -303,7 +308,12 @@ class _BasicInfoEditViewState extends State<_BasicInfoEditView> {
         : DateFormat('MMMM d, yyyy').format(widget.details.birthday!);
 
     return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
+      padding: EdgeInsets.fromLTRB(
+        16,
+        12,
+        16,
+        32 + MediaQuery.of(context).padding.bottom,
+      ),
       children: [
         _FieldLabel('Birthday'),
         InkWell(
