@@ -353,7 +353,8 @@ class _PeriodTrackerScreenState extends State<PeriodTrackerScreen> {
     if (tapped.isAtSameMomentAs(ovulationDay)) return _DayPhase.ovulation;
 
     final fertileStart = ovulationDay.subtract(const Duration(days: 5));
-    if (!tapped.isBefore(fertileStart) && tapped.isBefore(ovulationDay)) {
+    final fertileEnd = ovulationDay.add(const Duration(days: 1));
+    if (!tapped.isBefore(fertileStart) && !tapped.isAfter(fertileEnd)) {
       return _DayPhase.fertile;
     }
 

@@ -82,13 +82,7 @@ class PeriodCountdownCard extends StatelessWidget {
                           fontSize: 13,
                         ),
                       ),
-                      Text(
-                        status.tip,
-                        style: const TextStyle(
-                          fontSize: 13,
-                          fontStyle: FontStyle.italic,
-                        ),
-                      ),
+                      Text(status.tip, style: const TextStyle(fontSize: 13)),
                       const SizedBox(height: 12),
                       const Divider(height: 1),
                       const SizedBox(height: 12),
@@ -96,10 +90,10 @@ class PeriodCountdownCard extends StatelessWidget {
                         'Cycle Day ${status.cycleDay} · ${status.phaseName} Phase',
                         style: const TextStyle(
                           fontWeight: FontWeight.w600,
-                          fontSize: 13,
+                          fontSize: 14,
                         ),
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: 8),
                       Row(
                         children: [
                           Text(
@@ -114,12 +108,11 @@ class PeriodCountdownCard extends StatelessWidget {
                             style: TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.bold,
-                              color: status.conceptionChance.color,
+                              color: status.conceptionChance.color(context),
                             ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 4),
                       Text(
                         status.cervicalMucus,
                         style: const TextStyle(
@@ -181,6 +174,7 @@ class PeriodCountdownCard extends StatelessWidget {
     final cycleStart = anchor.add(Duration(days: cycleIndex * cycleLen));
     final ovulationDay = cycleStart.add(Duration(days: cycleLen - 14));
     final fertileStart = ovulationDay.subtract(const Duration(days: 5));
+    final fertileEnd = ovulationDay.add(const Duration(days: 1));
     final nextPeriodStart = cycleStart.add(Duration(days: cycleLen));
 
     final cycleDay = today.difference(cycleStart).inDays + 1;
@@ -213,15 +207,17 @@ class PeriodCountdownCard extends StatelessWidget {
       );
     }
 
-    // 3. Fertile window.
-    if (!today.isBefore(fertileStart) && today.isBefore(ovulationDay)) {
+    // 3. Fertile window (5 days before ovulation through 1 day after).
+    if (!today.isBefore(fertileStart) && !today.isAfter(fertileEnd)) {
+      final beforeOvulation = today.isBefore(ovulationDay);
       final daysToOvulation = ovulationDay.difference(today).inDays;
       return _PeriodStatus(
         icon: Icons.spa,
         color: Colors.teal.shade200,
         headline: 'Fertile window',
-        subline:
-            'Ovulation in $daysToOvulation day${daysToOvulation == 1 ? '' : 's'}',
+        subline: beforeOvulation
+            ? 'Ovulation in $daysToOvulation day${daysToOvulation == 1 ? '' : 's'}'
+            : 'Ovulation was yesterday',
         tip:
             'Good days to be extra thoughtful — and worth a chat if you\'re planning ahead 💬',
         cycleDay: cycleDay,
@@ -257,19 +253,32 @@ class PeriodCountdownCard extends StatelessWidget {
     return 'Luteal';
   }
 
+  // Mirrors a typical reference app's 7-day fertile window (5 days before
+  // ovulation through 1 day after) plus a tapering luteal phase:
+  //   fertile day 1-3  -> MEDIUM
+  //   fertile day 4-6  -> HIGH   (day 6 = ovulation)
+  //   fertile day 7    -> MEDIUM (the extra day after ovulation)
+  //   3 days after that -> MEDIUM (luteal taper)
+  //   everything else   -> LOW
   _ConceptionChance _conceptionChanceFor(
     int cycleDay,
     int fertileStartDay,
     int ovulationCycleDay,
   ) {
-    if (cycleDay >= fertileStartDay && cycleDay <= ovulationCycleDay) {
-      return _ConceptionChance.high;
+    final fertileEndDay = ovulationCycleDay + 1; // day 7 of the fertile window
+
+    if (cycleDay >= fertileStartDay && cycleDay <= fertileStartDay + 2) {
+      return _ConceptionChance.medium; // fertile day 1-3
     }
-    final rampingUp =
-        cycleDay == fertileStartDay - 1 || cycleDay == fertileStartDay - 2;
-    final justAfter =
-        cycleDay == ovulationCycleDay + 1 || cycleDay == ovulationCycleDay + 2;
-    if (rampingUp || justAfter) return _ConceptionChance.medium;
+    if (cycleDay > fertileStartDay + 2 && cycleDay <= ovulationCycleDay) {
+      return _ConceptionChance.high; // fertile day 4-6
+    }
+    if (cycleDay == fertileEndDay) {
+      return _ConceptionChance.medium; // fertile day 7
+    }
+    if (cycleDay > fertileEndDay && cycleDay <= fertileEndDay + 3) {
+      return _ConceptionChance.medium; // luteal taper
+    }
     return _ConceptionChance.low;
   }
 
@@ -316,11 +325,14 @@ enum _ConceptionChance {
     _ConceptionChance.high => 'HIGH',
   };
 
-  Color get color => switch (this) {
-    _ConceptionChance.low => Colors.grey.shade600,
-    _ConceptionChance.medium => Colors.orange.shade700,
-    _ConceptionChance.high => Colors.red.shade400,
-  };
+  Color color(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return switch (this) {
+      _ConceptionChance.low => colorScheme.outline,
+      _ConceptionChance.medium => Colors.orange.shade700,
+      _ConceptionChance.high => Colors.red.shade400,
+    };
+  }
 }
 
 class _PeriodStatus {
