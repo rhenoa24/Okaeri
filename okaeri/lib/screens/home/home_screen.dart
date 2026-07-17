@@ -19,6 +19,7 @@ import '../../widgets/moodlet_sheet.dart';
 import '../../models/moodlet.dart';
 import '../../widgets/profile_avatar_stack.dart';
 import '../../widgets/profile_sheet.dart';
+import '../../widgets/period_countdown_card.dart';
 
 class HomeScreen extends StatefulWidget {
   final String coupleId;
@@ -511,6 +512,9 @@ class _HomeScreenState extends State<HomeScreen> {
               },
             ),
           ),
+          const SizedBox(height: 16),
+
+          PeriodCountdownCard(coupleId: widget.coupleId),
         ],
       ),
     );
