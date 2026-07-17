@@ -64,9 +64,24 @@ class _BasicInfoReadView extends StatelessWidget {
           value: weightLabel,
         ),
         _InfoRow(
+          icon: Icons.home_outlined,
+          label: 'Home Address',
+          value: _orNull(details.homeAddress),
+        ),
+        _InfoRow(
           icon: Icons.work_outline,
           label: 'Occupation',
           value: _orNull(details.occupation),
+        ),
+        _InfoRow(
+          icon: Icons.business_outlined,
+          label: 'Company',
+          value: _orNull(details.company),
+        ),
+        _InfoRow(
+          icon: Icons.phone_outlined,
+          label: 'Contact Number',
+          value: _orNull(details.contactNumber),
         ),
         _InfoRow(
           icon: Icons.psychology_outlined,
@@ -243,6 +258,9 @@ class _BasicInfoEditViewState extends State<_BasicInfoEditView> {
   late final TextEditingController _heightController;
   late final TextEditingController _weightController;
   late final TextEditingController _occupationController;
+  late final TextEditingController _homeAddressController;
+  late final TextEditingController _companyController;
+  late final TextEditingController _contactNumberController;
   late final TextEditingController _hobbyInputController;
 
   @override
@@ -257,6 +275,15 @@ class _BasicInfoEditViewState extends State<_BasicInfoEditView> {
     _occupationController = TextEditingController(
       text: widget.details.occupation,
     );
+    _homeAddressController = TextEditingController(
+      text: widget.details.homeAddress,
+    );
+
+    _companyController = TextEditingController(text: widget.details.company);
+
+    _contactNumberController = TextEditingController(
+      text: widget.details.contactNumber,
+    );
     _hobbyInputController = TextEditingController();
   }
 
@@ -265,6 +292,9 @@ class _BasicInfoEditViewState extends State<_BasicInfoEditView> {
     _heightController.dispose();
     _weightController.dispose();
     _occupationController.dispose();
+    _homeAddressController.dispose();
+    _companyController.dispose();
+    _contactNumberController.dispose();
     _hobbyInputController.dispose();
     super.dispose();
   }
@@ -389,6 +419,19 @@ class _BasicInfoEditViewState extends State<_BasicInfoEditView> {
           ],
         ),
         const SizedBox(height: 20),
+
+        _FieldLabel('Home Address'),
+        TextField(
+          controller: _homeAddressController,
+          onChanged: (v) => _emit(widget.details.copyWith(homeAddress: v)),
+          decoration: const InputDecoration(
+            border: OutlineInputBorder(),
+            isDense: true,
+            prefixIcon: Icon(Icons.home_outlined, size: 20),
+          ),
+        ),
+        const SizedBox(height: 20),
+
         _FieldLabel('Occupation'),
         TextField(
           controller: _occupationController,
@@ -400,6 +443,32 @@ class _BasicInfoEditViewState extends State<_BasicInfoEditView> {
           ),
         ),
         const SizedBox(height: 20),
+
+        _FieldLabel('Company'),
+        TextField(
+          controller: _companyController,
+          onChanged: (v) => _emit(widget.details.copyWith(company: v)),
+          decoration: const InputDecoration(
+            border: OutlineInputBorder(),
+            isDense: true,
+            prefixIcon: Icon(Icons.business_outlined, size: 20),
+          ),
+        ),
+        const SizedBox(height: 20),
+
+        _FieldLabel('Contact Number'),
+        TextField(
+          controller: _contactNumberController,
+          keyboardType: TextInputType.phone,
+          onChanged: (v) => _emit(widget.details.copyWith(contactNumber: v)),
+          decoration: const InputDecoration(
+            border: OutlineInputBorder(),
+            isDense: true,
+            prefixIcon: Icon(Icons.phone_outlined, size: 20),
+          ),
+        ),
+        const SizedBox(height: 20),
+
         _FieldLabel('MBTI'),
         DropdownButtonFormField<String>(
           value: widget.details.mbti,

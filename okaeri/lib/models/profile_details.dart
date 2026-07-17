@@ -41,6 +41,9 @@ class ProfileDetails {
   final double? heightCm;
   final double? weightKg;
   final String occupation;
+  final String homeAddress;
+  final String company;
+  final String contactNumber;
   final String? mbti;
   final String? zodiac;
   final List<String> hobbies;
@@ -50,6 +53,9 @@ class ProfileDetails {
     this.heightCm,
     this.weightKg,
     this.occupation = '',
+    this.homeAddress = '',
+    this.company = '',
+    this.contactNumber = '',
     this.mbti,
     this.zodiac,
     this.hobbies = const [],
@@ -60,6 +66,9 @@ class ProfileDetails {
       heightCm == null &&
       weightKg == null &&
       occupation.isEmpty &&
+      homeAddress.isEmpty &&
+      company.isEmpty &&
+      contactNumber.isEmpty &&
       mbti == null &&
       zodiac == null &&
       hobbies.isEmpty;
@@ -72,6 +81,9 @@ class ProfileDetails {
     double? weightKg,
     bool clearWeight = false,
     String? occupation,
+    String? homeAddress,
+    String? company,
+    String? contactNumber,
     String? mbti,
     bool clearMbti = false,
     String? zodiac,
@@ -83,6 +95,9 @@ class ProfileDetails {
       heightCm: clearHeight ? null : (heightCm ?? this.heightCm),
       weightKg: clearWeight ? null : (weightKg ?? this.weightKg),
       occupation: occupation ?? this.occupation,
+      homeAddress: homeAddress ?? this.homeAddress,
+      company: company ?? this.company,
+      contactNumber: contactNumber ?? this.contactNumber,
       mbti: clearMbti ? null : (mbti ?? this.mbti),
       zodiac: clearZodiac ? null : (zodiac ?? this.zodiac),
       hobbies: hobbies ?? this.hobbies,
@@ -100,6 +115,9 @@ class ProfileDetails {
       heightCm: (map['heightCm'] as num?)?.toDouble(),
       weightKg: (map['weightKg'] as num?)?.toDouble(),
       occupation: map['occupation'] as String? ?? '',
+      homeAddress: map['homeAddress'] as String? ?? '',
+      company: map['company'] as String? ?? '',
+      contactNumber: map['contactNumber'] as String? ?? '',
       mbti: map['mbti'] as String?,
       zodiac: map['zodiac'] as String?,
       hobbies: List<String>.from(map['hobbies'] as List? ?? const []),
@@ -112,6 +130,9 @@ class ProfileDetails {
       'heightCm': heightCm,
       'weightKg': weightKg,
       'occupation': occupation,
+      'homeAddress': homeAddress,
+      'company': company,
+      'contactNumber': contactNumber,
       'mbti': mbti,
       'zodiac': zodiac,
       'hobbies': hobbies,

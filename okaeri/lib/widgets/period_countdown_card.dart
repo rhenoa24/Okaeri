@@ -75,14 +75,25 @@ class PeriodCountdownCard extends StatelessWidget {
                       ),
 
                       const SizedBox(height: 12),
-                      Text(
-                        status.subline,
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.outline,
-                          fontSize: 13,
+
+                      RichText(
+                        text: TextSpan(
+                          style: DefaultTextStyle.of(
+                            context,
+                          ).style.copyWith(fontSize: 13),
+                          children: [
+                            TextSpan(
+                              text: status.subline,
+                              style: TextStyle(
+                                color: Theme.of(context).colorScheme.outline,
+                              ),
+                            ),
+                            const TextSpan(text: ' · '),
+                            TextSpan(text: status.tip),
+                          ],
                         ),
                       ),
-                      Text(status.tip, style: const TextStyle(fontSize: 13)),
+
                       const SizedBox(height: 12),
                       const Divider(height: 1),
                       const SizedBox(height: 12),
@@ -235,7 +246,7 @@ class PeriodCountdownCard extends StatelessWidget {
       headline: daysUntil <= 0
           ? 'Period may start today'
           : 'Next period in $daysUntil day${daysUntil == 1 ? '' : 's'}',
-      subline: 'Around ${DateFormat.MMMd().format(nextPeriodStart)}',
+      subline: 'Around ${DateFormat.MMMMd().format(nextPeriodStart)}',
       tip: daysUntil <= 3
           ? 'Might be a good time for chocolate, a warm meal, or just extra patience 🍫'
           : "Just a heads up so you're not caught off guard later 🩷",
