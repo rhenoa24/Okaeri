@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:intl/intl.dart';
 import '../../models/period_entry.dart';
 import '../../models/period_settings.dart';
 import '../../services/period_service.dart';
+import '../../services/user_service.dart';
 import '../../theme/app_theme.dart';
 
 String _formatDate(DateTime d) =>
@@ -31,7 +33,11 @@ class PeriodTrackerScreen extends StatefulWidget {
 
 class _PeriodTrackerScreenState extends State<PeriodTrackerScreen> {
   final PeriodService _periodService = PeriodService();
+  final UserService _userService = UserService();
   late final String myId;
+
+  String myName = '';
+  String? partnerToken;
 
   DateTime _focusedDay = DateTime.now();
 
@@ -39,6 +45,22 @@ class _PeriodTrackerScreenState extends State<PeriodTrackerScreen> {
   void initState() {
     super.initState();
     myId = FirebaseAuth.instance.currentUser!.uid;
+    _loadPartnerInfo();
+  }
+
+  Future<void> _loadPartnerInfo() async {
+    myName = await _userService.getDisplayName(myId);
+
+    final coupleDoc = await FirebaseFirestore.instance
+        .collection('couples')
+        .doc(widget.coupleId)
+        .get();
+    final members = List<String>.from(coupleDoc.data()?['members'] ?? []);
+    final partnerId = members.firstWhere((id) => id != myId, orElse: () => '');
+
+    if (partnerId.isNotEmpty) {
+      partnerToken = await _userService.getFcmToken(partnerId);
+    }
   }
 
   void _jumpToToday() {
@@ -223,8 +245,12 @@ class _PeriodTrackerScreenState extends State<PeriodTrackerScreen> {
         coupleId: widget.coupleId,
         startDate: _formatDate(startDate),
         loggedBy: myId,
+        senderName: myName,
+        partnerToken: partnerToken,
       );
       if (endDate != null) {
+        // Closed out immediately on creation — the "started" push above
+        // already covers it, so no separate "ended" push here.
         await _periodService.logPeriodEnd(
           coupleId: widget.coupleId,
           entryId: id,
@@ -232,6 +258,7 @@ class _PeriodTrackerScreenState extends State<PeriodTrackerScreen> {
         );
       }
     } else {
+      final wasOngoing = existing.isOngoing;
       if (endDate == null) {
         // Went back to "still ongoing" — explicitly clear the end date.
         await _periodService.reopenEntry(
@@ -243,7 +270,23 @@ class _PeriodTrackerScreenState extends State<PeriodTrackerScreen> {
           entryId: existing.id,
           startDate: _formatDate(startDate),
         );
+      } else if (wasOngoing) {
+        // The period is actually being closed out right now — this is
+        // the one case that deserves an "ended" push.
+        await _periodService.updateEntry(
+          coupleId: widget.coupleId,
+          entryId: existing.id,
+          startDate: _formatDate(startDate),
+        );
+        await _periodService.logPeriodEnd(
+          coupleId: widget.coupleId,
+          entryId: existing.id,
+          endDate: _formatDate(endDate),
+          senderName: myName,
+          partnerToken: partnerToken,
+        );
       } else {
+        // Editing dates on an already-closed historical entry — no push.
         await _periodService.updateEntry(
           coupleId: widget.coupleId,
           entryId: existing.id,

@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/period_entry.dart';
 import '../models/period_settings.dart';
+import 'notification_sender.dart';
 
 /// Shared period tracker for a couple. Data lives under
 /// couples/{coupleId}/periodTracker so both partners see the same log
@@ -40,6 +41,8 @@ class PeriodService {
     required String coupleId,
     required String startDate,
     required String loggedBy,
+    String? senderName,
+    String? partnerToken,
   }) async {
     final docRef = await _entriesRef(coupleId).add({
       'startDate': startDate,
@@ -50,6 +53,13 @@ class PeriodService {
       'createdAt': Timestamp.fromDate(DateTime.now()),
       'updatedAt': Timestamp.fromDate(DateTime.now()),
     });
+    if (partnerToken != null) {
+      NotificationSender.send(
+        token: partnerToken,
+        title: '${senderName ?? 'Your partner'} started their period 🩸',
+        body: 'Sending some extra care your way today.',
+      );
+    }
     return docRef.id;
   }
 
@@ -57,11 +67,20 @@ class PeriodService {
     required String coupleId,
     required String entryId,
     required String endDate,
+    String? senderName,
+    String? partnerToken,
   }) async {
     await _entriesRef(coupleId).doc(entryId).update({
       'endDate': endDate,
       'updatedAt': Timestamp.fromDate(DateTime.now()),
     });
+    if (partnerToken != null) {
+      NotificationSender.send(
+        token: partnerToken,
+        title: '${senderName ?? 'Your partner'}\'s period has ended 🌸',
+        body: 'Good to know — thanks for staying in the loop.',
+      );
+    }
   }
 
   Future<void> updateEntry({

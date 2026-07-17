@@ -192,6 +192,18 @@ async function patchField(env, accessToken, path, fieldName, value) {
 	});
 }
 
+async function patchIntField(env, accessToken, path, fieldName, value) {
+	const url = `https://firestore.googleapis.com/v1/projects/${env.FIREBASE_PROJECT_ID}/databases/(default)/documents/${path}?updateMask.fieldPaths=${fieldName}`;
+	await fetch(url, {
+		method: "PATCH",
+		headers: {
+			Authorization: `Bearer ${accessToken}`,
+			"Content-Type": "application/json",
+		},
+		body: JSON.stringify({ fields: { [fieldName]: { integerValue: String(value) } } }),
+	});
+}
+
 async function notifyCouple(env, accessToken, coupleId, title, body) {
 	const memberIds = await getCoupleMemberIds(env, accessToken, coupleId);
 	const tokens = (
@@ -221,6 +233,94 @@ async function maybeRemind(env, accessToken, item, occ, todayStr, tomorrowStr, k
 				: "Enjoy your day together!";
 		await notifyCouple(env, accessToken, item.coupleId, `Today: ${title} 💌`, body);
 		await patchField(env, accessToken, item.path, "remindedTodayFor", occ);
+	}
+}
+
+// ---------------------------------------------------------------------
+// Period tracker reminders
+// ---------------------------------------------------------------------
+
+// Ongoing periods: a daily "Day X of period" nudge. Day 1 is skipped —
+// the app already sends an immediate push the moment a period is logged
+// as started (see period_service.dart), so the cron picks up from Day 2.
+async function checkOngoingPeriods(env, accessToken, today) {
+	const ongoing = await runCollectionGroupQuery(env, accessToken, "periodTracker", [
+		{ field: { fieldPath: "endDate" }, op: "EQUAL", value: { nullValue: null } },
+	]);
+
+	for (const entry of ongoing) {
+		const startStr = entry.fields.startDate?.stringValue;
+		if (!startStr) continue;
+
+		const start = new Date(startStr + "T00:00:00Z");
+		const day = Math.floor((today - start) / 86400000) + 1;
+		if (day < 2) continue;
+
+		const remindedDay = entry.fields.remindedDayNumber?.integerValue
+			? parseInt(entry.fields.remindedDayNumber.integerValue, 10)
+			: null;
+		if (remindedDay === day) continue;
+
+		await notifyCouple(
+			env,
+			accessToken,
+			entry.coupleId,
+			`Day ${day} of period 🩸`,
+			"A little extra patience and comfort go a long way today."
+		);
+		await patchIntField(env, accessToken, entry.path, "remindedDayNumber", day);
+	}
+}
+
+// Predicted next period, one day out — projected from each couple's most
+// recently logged period start plus their configured average cycle length
+// (couples/{coupleId}/meta/periodSettings), mirroring PeriodService's
+// predictNextPeriod() on the client.
+async function checkPredictedPeriods(env, accessToken, tomorrowStr) {
+	const allEntries = await runCollectionGroupQuery(env, accessToken, "periodTracker", []);
+
+	const latestByCouple = {};
+	for (const entry of allEntries) {
+		const startStr = entry.fields.startDate?.stringValue;
+		if (!startStr) continue;
+		const existing = latestByCouple[entry.coupleId];
+		if (!existing || startStr > existing.startStr) {
+			latestByCouple[entry.coupleId] = { startStr };
+		}
+	}
+
+	for (const [coupleId, info] of Object.entries(latestByCouple)) {
+		const settingsUrl = `https://firestore.googleapis.com/v1/projects/${env.FIREBASE_PROJECT_ID}/databases/(default)/documents/couples/${coupleId}/meta/periodSettings`;
+		const settingsRes = await fetch(settingsUrl, {
+			headers: { Authorization: `Bearer ${accessToken}` },
+		});
+		const settingsDoc = settingsRes.ok ? await settingsRes.json() : null;
+
+		const avgCycleLength = settingsDoc?.fields?.avgCycleLength?.integerValue
+			? parseInt(settingsDoc.fields.avgCycleLength.integerValue, 10)
+			: 28;
+		const alreadyRemindedFor = settingsDoc?.fields?.remindedPredictionFor?.stringValue;
+
+		const lastStart = new Date(info.startStr + "T00:00:00Z");
+		const predicted = addDays(lastStart, avgCycleLength);
+		const predictedStr = dateStr(predicted);
+
+		if (predictedStr === tomorrowStr && alreadyRemindedFor !== predictedStr) {
+			await notifyCouple(
+				env,
+				accessToken,
+				coupleId,
+				"Period expected tomorrow 🩷",
+				"Just a heads up — might be worth stocking up on essentials."
+			);
+			await patchField(
+				env,
+				accessToken,
+				`couples/${coupleId}/meta/periodSettings`,
+				"remindedPredictionFor",
+				predictedStr
+			);
+		}
 	}
 }
 
@@ -270,6 +370,10 @@ async function checkReminders(env) {
 		const occ = nextOccurrenceStr(stored, today);
 		await maybeRemind(env, accessToken, note, occ, todayStr, tomorrowStr, "event");
 	}
+
+	// Period tracker: ongoing "Day X" nudges + "period expected tomorrow".
+	await checkOngoingPeriods(env, accessToken, today);
+	await checkPredictedPeriods(env, accessToken, tomorrowStr);
 }
 
 export default {
