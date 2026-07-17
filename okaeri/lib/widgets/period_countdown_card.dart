@@ -89,6 +89,44 @@ class PeriodCountdownCard extends StatelessWidget {
                           fontStyle: FontStyle.italic,
                         ),
                       ),
+                      const SizedBox(height: 12),
+                      const Divider(height: 1),
+                      const SizedBox(height: 12),
+                      Text(
+                        'Cycle Day ${status.cycleDay} · ${status.phaseName} Phase',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 13,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          Text(
+                            'Chance of Conception: ',
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.outline,
+                              fontSize: 13,
+                            ),
+                          ),
+                          Text(
+                            status.conceptionChance.label,
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
+                              color: status.conceptionChance.color,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        status.cervicalMucus,
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontStyle: FontStyle.italic,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -105,6 +143,13 @@ class PeriodCountdownCard extends StatelessWidget {
     PeriodSettings settings,
   ) {
     final today = _utc(DateTime.now());
+    final periodLen = settings.avgPeriodLength;
+    final cycleLen = settings.avgCycleLength;
+
+    // Ovulation is modeled as 14 days before the next period starts —
+    // both expressed as a 1-based day-of-cycle, since cycleStart is day 1.
+    final ovulationCycleDay = cycleLen - 13;
+    final fertileStartDay = ovulationCycleDay - 5;
 
     // 1. Currently on a period.
     final ongoing = entries.where((e) => e.isOngoing).toList();
@@ -117,13 +162,17 @@ class PeriodCountdownCard extends StatelessWidget {
         headline: 'Day $day of period',
         subline: 'Started ${DateFormat.MMMd().format(start)}',
         tip: _periodTip(day),
+        cycleDay: day,
+        phaseName: 'Menstruation',
+        conceptionChance: _ConceptionChance.low,
+        cervicalMucus:
+            'Bleeding — mucus observation isn\'t reliable right now.',
       );
     }
 
     final sorted = [...entries]
       ..sort((a, b) => a.startDate.compareTo(b.startDate));
     final anchor = _utc(DateTime.parse(sorted.last.startDate));
-    final cycleLen = settings.avgCycleLength;
 
     final diffDays = today.difference(anchor).inDays;
     final cycleIndex = diffDays >= 0
@@ -134,6 +183,20 @@ class PeriodCountdownCard extends StatelessWidget {
     final fertileStart = ovulationDay.subtract(const Duration(days: 5));
     final nextPeriodStart = cycleStart.add(Duration(days: cycleLen));
 
+    final cycleDay = today.difference(cycleStart).inDays + 1;
+    final phaseName = _phaseNameFor(cycleDay, periodLen, ovulationCycleDay);
+    final conceptionChance = _conceptionChanceFor(
+      cycleDay,
+      fertileStartDay,
+      ovulationCycleDay,
+    );
+    final cervicalMucus = _cervicalMucusFor(
+      cycleDay,
+      periodLen,
+      fertileStartDay,
+      ovulationCycleDay,
+    );
+
     // 2. Ovulation day.
     if (today.isAtSameMomentAs(ovulationDay)) {
       return _PeriodStatus(
@@ -143,6 +206,10 @@ class PeriodCountdownCard extends StatelessWidget {
         subline: 'Peak fertility today',
         tip:
             "She might feel extra energetic today — a good day for a spontaneous date 🌷",
+        cycleDay: cycleDay,
+        phaseName: phaseName,
+        conceptionChance: conceptionChance,
+        cervicalMucus: cervicalMucus,
       );
     }
 
@@ -157,6 +224,10 @@ class PeriodCountdownCard extends StatelessWidget {
             'Ovulation in $daysToOvulation day${daysToOvulation == 1 ? '' : 's'}',
         tip:
             'Good days to be extra thoughtful — and worth a chat if you\'re planning ahead 💬',
+        cycleDay: cycleDay,
+        phaseName: phaseName,
+        conceptionChance: conceptionChance,
+        cervicalMucus: cervicalMucus,
       );
     }
 
@@ -172,7 +243,58 @@ class PeriodCountdownCard extends StatelessWidget {
       tip: daysUntil <= 3
           ? 'Might be a good time for chocolate, a warm meal, or just extra patience 🍫'
           : "Just a heads up so you're not caught off guard later 🩷",
+      cycleDay: cycleDay,
+      phaseName: phaseName,
+      conceptionChance: conceptionChance,
+      cervicalMucus: cervicalMucus,
     );
+  }
+
+  String _phaseNameFor(int cycleDay, int periodLen, int ovulationCycleDay) {
+    if (cycleDay <= periodLen) return 'Menstruation';
+    if (cycleDay < ovulationCycleDay) return 'Follicular';
+    if (cycleDay == ovulationCycleDay) return 'Ovulation';
+    return 'Luteal';
+  }
+
+  _ConceptionChance _conceptionChanceFor(
+    int cycleDay,
+    int fertileStartDay,
+    int ovulationCycleDay,
+  ) {
+    if (cycleDay >= fertileStartDay && cycleDay <= ovulationCycleDay) {
+      return _ConceptionChance.high;
+    }
+    final rampingUp =
+        cycleDay == fertileStartDay - 1 || cycleDay == fertileStartDay - 2;
+    final justAfter =
+        cycleDay == ovulationCycleDay + 1 || cycleDay == ovulationCycleDay + 2;
+    if (rampingUp || justAfter) return _ConceptionChance.medium;
+    return _ConceptionChance.low;
+  }
+
+  String _cervicalMucusFor(
+    int cycleDay,
+    int periodLen,
+    int fertileStartDay,
+    int ovulationCycleDay,
+  ) {
+    if (cycleDay <= periodLen) {
+      return 'Bleeding — mucus observation isn\'t reliable right now.';
+    }
+    if (cycleDay < fertileStartDay) {
+      return 'Dry or minimal, sticky mucus.';
+    }
+    if (cycleDay < ovulationCycleDay) {
+      return 'Increasing and creamy, becoming clearer and stretchier as ovulation nears.';
+    }
+    if (cycleDay == ovulationCycleDay) {
+      return 'Clear, stretchy, egg-white consistency — the most fertile sign.';
+    }
+    if (cycleDay <= ovulationCycleDay + 3) {
+      return 'Mucus may become less, milky white, and cloudy again.';
+    }
+    return 'Dry or minimal for the rest of the cycle.';
   }
 
   String _periodTip(int day) {
@@ -183,12 +305,34 @@ class PeriodCountdownCard extends StatelessWidget {
   }
 }
 
+enum _ConceptionChance {
+  low,
+  medium,
+  high;
+
+  String get label => switch (this) {
+    _ConceptionChance.low => 'LOW',
+    _ConceptionChance.medium => 'MEDIUM',
+    _ConceptionChance.high => 'HIGH',
+  };
+
+  Color get color => switch (this) {
+    _ConceptionChance.low => Colors.grey.shade600,
+    _ConceptionChance.medium => Colors.orange.shade700,
+    _ConceptionChance.high => Colors.red.shade400,
+  };
+}
+
 class _PeriodStatus {
   final IconData icon;
   final Color color;
   final String headline;
   final String subline;
   final String tip;
+  final int cycleDay;
+  final String phaseName;
+  final _ConceptionChance conceptionChance;
+  final String cervicalMucus;
 
   const _PeriodStatus({
     required this.icon,
@@ -196,5 +340,9 @@ class _PeriodStatus {
     required this.headline,
     required this.subline,
     required this.tip,
+    required this.cycleDay,
+    required this.phaseName,
+    required this.conceptionChance,
+    required this.cervicalMucus,
   });
 }
