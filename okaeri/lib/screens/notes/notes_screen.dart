@@ -44,8 +44,26 @@ class _NotesScreenState extends State<NotesScreen>
         bottom: TabBar(
           controller: _tabController,
           tabs: const [
-            Tab(text: 'Our Room'),
-            Tab(text: 'My Corner'),
+            Tab(
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.wb_sunny_outlined, size: 18),
+                  SizedBox(width: 6),
+                  Text('Our Room'),
+                ],
+              ),
+            ),
+            Tab(
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.bedtime_outlined, size: 18),
+                  SizedBox(width: 6),
+                  Text('My Corner'),
+                ],
+              ),
+            ),
           ],
         ),
       ),

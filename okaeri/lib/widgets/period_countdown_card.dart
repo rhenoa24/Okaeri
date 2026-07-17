@@ -124,6 +124,7 @@ class PeriodCountdownCard extends StatelessWidget {
                           ),
                         ],
                       ),
+                      const SizedBox(height: 4),
                       Text(
                         status.cervicalMucus,
                         style: const TextStyle(
@@ -223,7 +224,7 @@ class PeriodCountdownCard extends StatelessWidget {
       final beforeOvulation = today.isBefore(ovulationDay);
       final daysToOvulation = ovulationDay.difference(today).inDays;
       return _PeriodStatus(
-        icon: Icons.spa,
+        icon: Icons.spa_outlined,
         color: Colors.teal.shade200,
         headline: 'Fertile window',
         subline: beforeOvulation
@@ -241,7 +242,7 @@ class PeriodCountdownCard extends StatelessWidget {
     // 4. Countdown to next predicted period.
     final daysUntil = nextPeriodStart.difference(today).inDays;
     return _PeriodStatus(
-      icon: Icons.event,
+      icon: Icons.event_outlined,
       color: Colors.pink.shade200,
       headline: daysUntil <= 0
           ? 'Period may start today'

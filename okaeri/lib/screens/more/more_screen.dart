@@ -37,7 +37,7 @@ class _MoreScreenState extends State<MoreScreen> {
           const Divider(),
 
           ListTile(
-            leading: const Icon(Icons.favorite_border),
+            leading: const Icon(Icons.water_drop_outlined),
             title: const Text('Period Tracker'),
             subtitle: const Text('Shared cycle log & predictions'),
             trailing: const Icon(Icons.chevron_right),

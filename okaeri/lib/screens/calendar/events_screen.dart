@@ -51,8 +51,26 @@ class _EventsScreenState extends State<EventsScreen>
         bottom: TabBar(
           controller: _tabController,
           tabs: const [
-            Tab(text: 'Important Dates'),
-            Tab(text: 'All Events'),
+            Tab(
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.favorite_border, size: 18),
+                  SizedBox(width: 6),
+                  Text('Important Dates'),
+                ],
+              ),
+            ),
+            Tab(
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.celebration_outlined, size: 18),
+                  SizedBox(width: 6),
+                  Text('All Events'),
+                ],
+              ),
+            ),
           ],
         ),
       ),

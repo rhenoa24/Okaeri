@@ -56,8 +56,26 @@ class _PlansScreenState extends State<PlansScreen>
         bottom: TabBar(
           controller: _tabController,
           tabs: const [
-            Tab(text: 'Upcoming'),
-            Tab(text: 'Past'),
+            Tab(
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.alarm, size: 18),
+                  SizedBox(width: 6),
+                  Text('Upcoming Plans'),
+                ],
+              ),
+            ),
+            Tab(
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.check, size: 18),
+                  SizedBox(width: 6),
+                  Text('Past Logs'),
+                ],
+              ),
+            ),
           ],
         ),
       ),
