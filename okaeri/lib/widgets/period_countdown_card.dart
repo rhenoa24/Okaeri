@@ -171,7 +171,7 @@ class PeriodCountdownCard extends StatelessWidget {
         phaseName: 'Menstruation',
         conceptionChance: _ConceptionChance.low,
         cervicalMucus:
-            'Bleeding — mucus observation isn\'t reliable right now.',
+            'Little to no noticeable cervical mucus because it\'s masked by menstrual flow.',
       );
     }
 
@@ -301,21 +301,26 @@ class PeriodCountdownCard extends StatelessWidget {
     int ovulationCycleDay,
   ) {
     if (cycleDay <= periodLen) {
-      return 'Bleeding — mucus observation isn\'t reliable right now.';
+      return 'Little to no noticeable cervical mucus because it\'s masked by menstrual flow.';
     }
+
     if (cycleDay < fertileStartDay) {
-      return 'Dry or minimal, sticky mucus.';
+      return 'Typically dry or sticky with only a small amount of mucus.';
     }
+
     if (cycleDay < ovulationCycleDay) {
-      return 'Increasing and creamy, becoming clearer and stretchier as ovulation nears.';
+      return 'Creamy or lotion-like mucus that gradually becomes clearer, wetter, and more stretchy as ovulation approaches.';
     }
+
     if (cycleDay == ovulationCycleDay) {
-      return 'Clear, stretchy, egg-white consistency — the most fertile sign.';
+      return 'Clear, slippery, stretchy, egg-white mucus— the most fertile type.';
     }
+
     if (cycleDay <= ovulationCycleDay + 3) {
-      return 'Mucus may become less, milky white, and cloudy again.';
+      return 'Mucus becomes thicker, cloudier, and less stretchy as fertility declines.';
     }
-    return 'Dry or minimal for the rest of the cycle.';
+
+    return 'Usually thick, sticky, or dry with little noticeable mucus.';
   }
 
   String _periodTip(int day) {
