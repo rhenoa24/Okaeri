@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import '../../models/period_entry.dart';
 import '../../models/period_settings.dart';
 import '../../services/period_service.dart';
+import '../../services/period_cycle_utils.dart';
 import '../screens/period_tracker/period_tracker_screen.dart';
 
 /// Home-dashboard status card: shows whether the couple is currently in
@@ -97,40 +98,11 @@ class PeriodCountdownCard extends StatelessWidget {
                       const SizedBox(height: 12),
                       const Divider(height: 1),
                       const SizedBox(height: 12),
-                      Text(
-                        'Cycle Day ${status.cycleDay} · ${status.phaseName} Phase',
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 14,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          Text(
-                            'Chance of Conception: ',
-                            style: TextStyle(
-                              color: Theme.of(context).colorScheme.outline,
-                              fontSize: 13,
-                            ),
-                          ),
-                          Text(
-                            status.conceptionChance.label,
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.bold,
-                              color: status.conceptionChance.color(context),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        status.cervicalMucus,
-                        style: const TextStyle(
-                          fontSize: 13,
-                          fontStyle: FontStyle.italic,
-                        ),
+                      CycleInfoBlock(
+                        cycleDay: status.cycleDay,
+                        phaseName: status.phaseName,
+                        conceptionChance: status.conceptionChance,
+                        cervicalMucus: status.cervicalMucus,
                       ),
                     ],
                   ),
@@ -169,34 +141,30 @@ class PeriodCountdownCard extends StatelessWidget {
         tip: _periodTip(day),
         cycleDay: day,
         phaseName: 'Menstruation',
-        conceptionChance: _ConceptionChance.low,
+        conceptionChance: ConceptionChance.low,
         cervicalMucus:
             'Little to no noticeable cervical mucus because it\'s masked by menstrual flow.',
       );
     }
 
-    final sorted = [...entries]
-      ..sort((a, b) => a.startDate.compareTo(b.startDate));
-    final anchor = _utc(DateTime.parse(sorted.last.startDate));
+    final projection = PeriodCycleUtils.projectFor(today, entries, cycleLen)!;
+    final ovulationDay = projection.ovulationDay;
+    final fertileStart = projection.fertileStart;
+    final fertileEnd = projection.fertileEnd;
+    final nextPeriodStart = projection.nextPeriodStart;
 
-    final diffDays = today.difference(anchor).inDays;
-    final cycleIndex = diffDays >= 0
-        ? (diffDays / cycleLen).floor()
-        : ((diffDays - cycleLen + 1) / cycleLen).floor();
-    final cycleStart = anchor.add(Duration(days: cycleIndex * cycleLen));
-    final ovulationDay = cycleStart.add(Duration(days: cycleLen - 14));
-    final fertileStart = ovulationDay.subtract(const Duration(days: 5));
-    final fertileEnd = ovulationDay.add(const Duration(days: 1));
-    final nextPeriodStart = cycleStart.add(Duration(days: cycleLen));
-
-    final cycleDay = today.difference(cycleStart).inDays + 1;
-    final phaseName = _phaseNameFor(cycleDay, periodLen, ovulationCycleDay);
-    final conceptionChance = _conceptionChanceFor(
+    final cycleDay = projection.cycleDay;
+    final phaseName = PeriodCycleUtils.phaseNameFor(
+      cycleDay,
+      periodLen,
+      ovulationCycleDay,
+    );
+    final conceptionChance = PeriodCycleUtils.conceptionChanceFor(
       cycleDay,
       fertileStartDay,
       ovulationCycleDay,
     );
-    final cervicalMucus = _cervicalMucusFor(
+    final cervicalMucus = PeriodCycleUtils.cervicalMucusFor(
       cycleDay,
       periodLen,
       fertileStartDay,
@@ -258,97 +226,11 @@ class PeriodCountdownCard extends StatelessWidget {
     );
   }
 
-  String _phaseNameFor(int cycleDay, int periodLen, int ovulationCycleDay) {
-    if (cycleDay <= periodLen) return 'Menstruation';
-    if (cycleDay < ovulationCycleDay) return 'Follicular';
-    if (cycleDay == ovulationCycleDay) return 'Ovulation';
-    return 'Luteal';
-  }
-
-  // Mirrors a typical reference app's 7-day fertile window (5 days before
-  // ovulation through 1 day after) plus a tapering luteal phase:
-  //   fertile day 1-3  -> MEDIUM
-  //   fertile day 4-6  -> HIGH   (day 6 = ovulation)
-  //   fertile day 7    -> MEDIUM (the extra day after ovulation)
-  //   3 days after that -> MEDIUM (luteal taper)
-  //   everything else   -> LOW
-  _ConceptionChance _conceptionChanceFor(
-    int cycleDay,
-    int fertileStartDay,
-    int ovulationCycleDay,
-  ) {
-    final fertileEndDay = ovulationCycleDay + 1; // day 7 of the fertile window
-
-    if (cycleDay >= fertileStartDay && cycleDay <= fertileStartDay + 2) {
-      return _ConceptionChance.medium; // fertile day 1-3
-    }
-    if (cycleDay > fertileStartDay + 2 && cycleDay <= ovulationCycleDay) {
-      return _ConceptionChance.high; // fertile day 4-6
-    }
-    if (cycleDay == fertileEndDay) {
-      return _ConceptionChance.medium; // fertile day 7
-    }
-    if (cycleDay > fertileEndDay && cycleDay <= fertileEndDay + 3) {
-      return _ConceptionChance.medium; // luteal taper
-    }
-    return _ConceptionChance.low;
-  }
-
-  String _cervicalMucusFor(
-    int cycleDay,
-    int periodLen,
-    int fertileStartDay,
-    int ovulationCycleDay,
-  ) {
-    if (cycleDay <= periodLen) {
-      return 'Little to no noticeable cervical mucus because it\'s masked by menstrual flow.';
-    }
-
-    if (cycleDay < fertileStartDay) {
-      return 'Typically dry or sticky with only a small amount of mucus.';
-    }
-
-    if (cycleDay < ovulationCycleDay) {
-      return 'Creamy or lotion-like mucus that gradually becomes clearer, wetter, and more stretchy as ovulation approaches.';
-    }
-
-    if (cycleDay == ovulationCycleDay) {
-      return 'Clear, slippery, stretchy, egg-white mucus— the most fertile type.';
-    }
-
-    if (cycleDay <= ovulationCycleDay + 3) {
-      return 'Mucus becomes thicker, cloudier, and less stretchy as fertility declines.';
-    }
-
-    return 'Usually thick, sticky, or dry with little noticeable mucus.';
-  }
-
   String _periodTip(int day) {
     if (day <= 2) {
       return 'Cramps hit hardest early on — a heating pad and a little extra gentleness go a long way 🫂';
     }
     return "Still worth checking in — snacks, comfort, and no unnecessary pressure today 🍵";
-  }
-}
-
-enum _ConceptionChance {
-  low,
-  medium,
-  high;
-
-  String get label => switch (this) {
-    _ConceptionChance.low => 'LOW',
-    _ConceptionChance.medium => 'MEDIUM',
-    _ConceptionChance.high => 'HIGH',
-  };
-
-  Color color(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    return switch (this) {
-      _ConceptionChance.low => colorScheme.outline,
-      _ConceptionChance.medium => Colors.orange.shade700,
-      _ConceptionChance.high => Colors.red.shade400,
-    };
   }
 }
 
@@ -360,7 +242,7 @@ class _PeriodStatus {
   final String tip;
   final int cycleDay;
   final String phaseName;
-  final _ConceptionChance conceptionChance;
+  final ConceptionChance conceptionChance;
   final String cervicalMucus;
 
   const _PeriodStatus({
