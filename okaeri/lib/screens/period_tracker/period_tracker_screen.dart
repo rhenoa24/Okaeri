@@ -65,7 +65,10 @@ class _PeriodTrackerScreenState extends State<PeriodTrackerScreen> {
   }
 
   void _jumpToToday() {
-    setState(() => _focusedDay = DateTime.now());
+    setState(() {
+      _focusedDay = DateTime.now();
+      _selectedDay = DateTime.now();
+    });
   }
 
   Future<void> _jumpToDate() async {
@@ -268,13 +271,6 @@ class _PeriodTrackerScreenState extends State<PeriodTrackerScreen> {
       appBar: AppBar(
         title: const Text('Period Tracker'),
         actions: [
-          if (!(_focusedDay.year == DateTime.now().year &&
-              _focusedDay.month == DateTime.now().month))
-            IconButton(
-              icon: const Icon(Icons.today_outlined),
-              tooltip: 'Jump to Today',
-              onPressed: _jumpToToday,
-            ),
           IconButton(
             icon: const Icon(Icons.list_alt_outlined),
             tooltip: 'Period Records',
@@ -293,6 +289,13 @@ class _PeriodTrackerScreenState extends State<PeriodTrackerScreen> {
               );
             },
           ),
+          if (!(_focusedDay.year == DateTime.now().year &&
+              _focusedDay.month == DateTime.now().month))
+            IconButton(
+              icon: const Icon(Icons.today_outlined),
+              tooltip: 'Jump to Today',
+              onPressed: _jumpToToday,
+            ),
         ],
       ),
       // floatingActionButton: FloatingActionButton(
