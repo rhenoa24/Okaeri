@@ -3,7 +3,7 @@ import 'package:intl/intl.dart';
 import '../../models/period_entry.dart';
 import '../../models/period_settings.dart';
 import '../../services/period_service.dart';
-import '../screens/calendar/period_tracker_screen.dart';
+import '../screens/period_tracker/period_tracker_screen.dart';
 
 /// Home-dashboard status card: shows whether the couple is currently in
 /// a period, ovulating, in the fertile window, or counting down to the

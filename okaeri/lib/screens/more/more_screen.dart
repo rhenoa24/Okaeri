@@ -3,7 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'profile_settings_screen.dart';
 // import '../../theme/theme_preview.dart';
 import '../../theme/theme_controller.dart';
-import '../calendar/period_tracker_screen.dart';
+import '../period_tracker/period_tracker_screen.dart';
 
 class MoreScreen extends StatefulWidget {
   final String coupleId;
