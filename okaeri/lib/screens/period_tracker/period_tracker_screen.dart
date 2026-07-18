@@ -400,9 +400,14 @@ class _PeriodTrackerScreenState extends State<PeriodTrackerScreen> {
                       calendarBuilders: CalendarBuilders(
                         defaultBuilder: (context, day, focusedDay) =>
                             _dayCell(context, day, entries, settings),
+
                         todayBuilder: (context, day, focusedDay) =>
                             _dayCell(context, day, entries, settings),
+
                         selectedBuilder: (context, day, focusedDay) =>
+                            _dayCell(context, day, entries, settings),
+
+                        outsideBuilder: (context, day, focusedDay) =>
                             _dayCell(context, day, entries, settings),
                       ),
                     ),

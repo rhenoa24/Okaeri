@@ -17,7 +17,7 @@ enum ConceptionChance {
     return switch (this) {
       ConceptionChance.low => colorScheme.outline,
       ConceptionChance.medium => Colors.orange.shade700,
-      ConceptionChance.high => Colors.red.shade400,
+      ConceptionChance.high => colorScheme.error,
     };
   }
 }
