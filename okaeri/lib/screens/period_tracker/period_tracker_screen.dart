@@ -295,18 +295,18 @@ class _PeriodTrackerScreenState extends State<PeriodTrackerScreen> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => showPeriodEntrySheet(
-          context,
-          coupleId: widget.coupleId,
-          myId: myId,
-          periodService: _periodService,
-          myName: myName,
-          partnerToken: partnerToken,
-          initialStartDate: _selectedDay,
-        ),
-        child: const Icon(Icons.add),
-      ),
+      // floatingActionButton: FloatingActionButton(
+      //   onPressed: () => showPeriodEntrySheet(
+      //     context,
+      //     coupleId: widget.coupleId,
+      //     myId: myId,
+      //     periodService: _periodService,
+      //     myName: myName,
+      //     partnerToken: partnerToken,
+      //     initialStartDate: _selectedDay,
+      //   ),
+      //   child: const Icon(Icons.add),
+      // ),
       body: StreamBuilder<List<PeriodEntry>>(
         stream: _periodService.watchEntries(widget.coupleId),
         builder: (context, entriesSnap) {
@@ -443,21 +443,27 @@ class _PeriodTrackerScreenState extends State<PeriodTrackerScreen> {
                       ),
                     ),
                     const Divider(height: 1),
+
+                    const SizedBox(height: 16),
+
                     Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                      child: Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          isToday
-                              ? 'Today · ${DateFormat.yMMMd().format(_selectedDay)}'
-                              : DateFormat.yMMMd().format(_selectedDay),
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 15,
-                          ),
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: _SectionHeader(
+                        title: DateFormat.yMMMd().format(_selectedDay),
+                        onAdd: () => showPeriodEntrySheet(
+                          context,
+                          coupleId: widget.coupleId,
+                          myId: myId,
+                          periodService: _periodService,
+                          myName: myName,
+                          partnerToken: partnerToken,
+                          initialStartDate: _selectedDay,
                         ),
                       ),
                     ),
+
+                    const SizedBox(height: 8),
+
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: info == null
@@ -526,6 +532,7 @@ class _PeriodTrackerScreenState extends State<PeriodTrackerScreen> {
           color: colorScheme.tertiaryContainer,
           shape: BoxShape.circle,
         );
+        textColor = colorScheme.onPrimary;
         break;
       case _DayPhase.fertile:
         decoration = BoxDecoration(
@@ -537,16 +544,23 @@ class _PeriodTrackerScreenState extends State<PeriodTrackerScreen> {
         break;
     }
 
+    // Give today's date a subtle background if it doesn't already have one.
+    if (isToday && decoration == null) {
+      decoration = BoxDecoration(
+        color: colorScheme.surfaceContainer,
+        shape: BoxShape.circle,
+      );
+    }
+
+    // Add the selection border on top of whatever decoration already exists.
     if (isSelected) {
       decoration = (decoration ?? const BoxDecoration(shape: BoxShape.circle))
           .copyWith(
-            border: Border.all(color: colorScheme.secondary, width: 2.5),
+            border: Border.all(
+              color: colorScheme.onSurface.withValues(alpha: 0.22),
+              width: 2.5,
+            ),
           );
-    } else if (isToday && decoration == null) {
-      decoration = BoxDecoration(
-        border: Border.all(color: colorScheme.primary, width: 1.5),
-        shape: BoxShape.circle,
-      );
     }
 
     return Center(
@@ -578,6 +592,32 @@ class _LegendDot extends StatelessWidget {
         ),
         const SizedBox(width: 6),
         Text(label, style: const TextStyle(fontSize: 12)),
+      ],
+    );
+  }
+}
+
+class _SectionHeader extends StatelessWidget {
+  final String title;
+  final VoidCallback onAdd;
+
+  const _SectionHeader({required this.title, required this.onAdd});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Text(
+          title,
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+        ),
+        const Spacer(),
+        IconButton(
+          icon: const Icon(Icons.add),
+          onPressed: onAdd,
+          visualDensity: VisualDensity.compact,
+          color: Theme.of(context).colorScheme.primary,
+        ),
       ],
     );
   }
