@@ -298,18 +298,6 @@ class _PeriodTrackerScreenState extends State<PeriodTrackerScreen> {
             ),
         ],
       ),
-      // floatingActionButton: FloatingActionButton(
-      //   onPressed: () => showPeriodEntrySheet(
-      //     context,
-      //     coupleId: widget.coupleId,
-      //     myId: myId,
-      //     periodService: _periodService,
-      //     myName: myName,
-      //     partnerToken: partnerToken,
-      //     initialStartDate: _selectedDay,
-      //   ),
-      //   child: const Icon(Icons.add),
-      // ),
       body: StreamBuilder<List<PeriodEntry>>(
         stream: _periodService.watchEntries(widget.coupleId),
         builder: (context, entriesSnap) {
@@ -327,6 +315,10 @@ class _PeriodTrackerScreenState extends State<PeriodTrackerScreen> {
 
               final info = _cycleInfoFor(_selectedDay, entries, settings);
               final isToday = isSameDay(_selectedDay, DateTime.now());
+              final selectedEntry = _entryContaining(
+                _utc(_selectedDay),
+                entries,
+              );
 
               return SingleChildScrollView(
                 padding: const EdgeInsets.only(bottom: 96),
@@ -467,6 +459,17 @@ class _PeriodTrackerScreenState extends State<PeriodTrackerScreen> {
                           partnerToken: partnerToken,
                           initialStartDate: _selectedDay,
                         ),
+                        onEdit: selectedEntry == null
+                            ? null
+                            : () => showPeriodEntrySheet(
+                                context,
+                                coupleId: widget.coupleId,
+                                myId: myId,
+                                periodService: _periodService,
+                                myName: myName,
+                                partnerToken: partnerToken,
+                                existing: selectedEntry,
+                              ),
                       ),
                     ),
 
@@ -608,8 +611,9 @@ class _LegendDot extends StatelessWidget {
 class _SectionHeader extends StatelessWidget {
   final String title;
   final VoidCallback onAdd;
+  final VoidCallback? onEdit;
 
-  const _SectionHeader({required this.title, required this.onAdd});
+  const _SectionHeader({required this.title, required this.onAdd, this.onEdit});
 
   @override
   Widget build(BuildContext context) {
@@ -620,8 +624,17 @@ class _SectionHeader extends StatelessWidget {
           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
         ),
         const Spacer(),
+        if (onEdit != null)
+          IconButton(
+            icon: const Icon(Icons.edit_outlined),
+            tooltip: 'Edit Period',
+            onPressed: onEdit,
+            visualDensity: VisualDensity.compact,
+            color: Theme.of(context).colorScheme.primary,
+          ),
         IconButton(
           icon: const Icon(Icons.add),
+          tooltip: 'Log Period',
           onPressed: onAdd,
           visualDensity: VisualDensity.compact,
           color: Theme.of(context).colorScheme.primary,
