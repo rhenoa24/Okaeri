@@ -28,8 +28,15 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
 
   late bool _isShared;
   bool _isSaving = false;
+  bool _hasUnsavedChanges = false;
 
   late final String myId;
+
+  // Snapshot of the note's state as-loaded (or as-last-saved), used to
+  // detect whether the user has actually changed anything.
+  late String _savedTitle;
+  late String _savedContentJson;
+  late bool _savedIsShared;
 
   bool get _isEditing => widget.existingNote != null;
 
@@ -51,14 +58,57 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
       } catch (_) {
         _quillController = quill.QuillController.basic();
       }
+      _savedTitle = note.title;
+      _savedContentJson = note.contentJson;
     } else {
       _isShared = widget.initialVisibility == 'shared';
       _quillController = quill.QuillController.basic();
+      _savedTitle = '';
+      _savedContentJson = jsonEncode(_quillController.document.toDelta().toJson());
     }
+    _savedIsShared = _isShared;
+
+    _titleController.addListener(_recomputeDirty);
+    _quillController.addListener(_recomputeDirty);
+  }
+
+  void _recomputeDirty() {
+    final dirty = _titleController.text.trim() != _savedTitle.trim() ||
+        _isShared != _savedIsShared ||
+        jsonEncode(_quillController.document.toDelta().toJson()) != _savedContentJson;
+    if (dirty != _hasUnsavedChanges) {
+      setState(() => _hasUnsavedChanges = dirty);
+    }
+  }
+
+  Future<bool> _confirmDiscard() async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Discard changes?'),
+        content: const Text('You have unsaved changes that will be lost.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Keep editing'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(
+              'Discard',
+              style: TextStyle(color: Theme.of(context).colorScheme.error),
+            ),
+          ),
+        ],
+      ),
+    );
+    return result ?? false;
   }
 
   @override
   void dispose() {
+    _titleController.removeListener(_recomputeDirty);
+    _quillController.removeListener(_recomputeDirty);
     _titleController.dispose();
     _quillController.dispose();
     super.dispose();
@@ -93,6 +143,11 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
       );
     }
 
+    _savedTitle = title;
+    _savedContentJson = contentJson;
+    _savedIsShared = _isShared;
+    _hasUnsavedChanges = false;
+
     if (mounted) Navigator.pop(context);
   }
 
@@ -126,7 +181,16 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return PopScope(
+      canPop: !_hasUnsavedChanges,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return;
+        final shouldDiscard = await _confirmDiscard();
+        if (shouldDiscard && mounted) {
+          Navigator.pop(context);
+        }
+      },
+      child: Scaffold(
       appBar: AppBar(
         title: Text(_isEditing ? 'Edit Note' : 'New Note'),
         actions: [
@@ -220,6 +284,7 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
             ),
           ],
         ),
+      ),
       ),
     );
   }
