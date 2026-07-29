@@ -82,13 +82,14 @@ class _PlanEditorScreenState extends State<PlanEditorScreen>
       _currentTimetableSignature() != _savedTimetableSignature;
 
   String _currentTimetableSignature() {
-    final entries = _rows
-        .map(
-          (r) => '${_formatTime(r.time)}|${r.textController.text.trim()}',
-        )
-        .where((s) => !s.endsWith('|'))
-        .toList()
-      ..sort();
+    final entries =
+        _rows
+            .map(
+              (r) => '${_formatTime(r.time)}|${r.textController.text.trim()}',
+            )
+            .where((s) => !s.endsWith('|'))
+            .toList()
+          ..sort();
     return entries.join(';');
   }
 
@@ -236,10 +237,7 @@ class _PlanEditorScreenState extends State<PlanEditorScreen>
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: Text(
-              'Delete',
-              style: TextStyle(color: Theme.of(context).colorScheme.error),
-            ),
+            child: Text('Delete'),
           ),
         ],
       ),
@@ -338,97 +336,99 @@ class _PlanEditorScreenState extends State<PlanEditorScreen>
 
   @override
   Widget build(BuildContext context) {
-    return guardUnsavedChanges(Scaffold(
-      appBar: AppBar(
-        title: Text(_isEditing ? 'Edit Plan' : 'New Plan'),
-        actions: [
-          if (_isEditing)
+    return guardUnsavedChanges(
+      Scaffold(
+        appBar: AppBar(
+          title: Text(_isEditing ? 'Edit Plan' : 'New Plan'),
+          actions: [
+            if (_isEditing)
+              IconButton(
+                icon: const Icon(Icons.delete_outline),
+                onPressed: _delete,
+              ),
             IconButton(
-              icon: const Icon(Icons.delete_outline),
-              onPressed: _delete,
+              icon: _isSaving
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : Icon(
+                      Icons.check,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+              onPressed: _isSaving ? null : _save,
             ),
-          IconButton(
-            icon: _isSaving
-                ? const SizedBox(
-                    height: 20,
-                    width: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : Icon(
-                    Icons.check,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-            onPressed: _isSaving ? null : _save,
-          ),
-        ],
-      ),
-      body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: ListView(
-                padding: EdgeInsets.zero,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 8,
-                    ),
-                    child: TextField(
-                      controller: _titleController,
-                      style: const TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      decoration: const InputDecoration(
-                        hintText: 'Untitled',
-                        border: InputBorder.none,
-                      ),
-                    ),
-                  ),
-                  Theme(
-                    data: Theme.of(
-                      context,
-                    ).copyWith(dividerColor: Colors.transparent),
-                    child: ListTile(
-                      contentPadding: const EdgeInsets.symmetric(
+          ],
+        ),
+        body: SafeArea(
+          child: Column(
+            children: [
+              Expanded(
+                child: ListView(
+                  padding: EdgeInsets.zero,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
                         horizontal: 16,
+                        vertical: 8,
                       ),
-                      title: InkWell(
-                        onTap: _pickDate,
-                        borderRadius: BorderRadius.circular(4),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 4),
-                          child: Row(
-                            children: [
-                              Icon(
-                                Icons.edit_calendar_outlined,
-                                size: 18,
-                                color: Theme.of(context).colorScheme.outline,
-                              ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Text(
-                                  DateFormat(
-                                    'EEEE, MMMM d, yyyy',
-                                  ).format(_selectedDate),
-                                  style: const TextStyle(fontSize: 14),
+                      child: TextField(
+                        controller: _titleController,
+                        style: const TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        decoration: const InputDecoration(
+                          hintText: 'Untitled',
+                          border: InputBorder.none,
+                        ),
+                      ),
+                    ),
+                    Theme(
+                      data: Theme.of(
+                        context,
+                      ).copyWith(dividerColor: Colors.transparent),
+                      child: ListTile(
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                        ),
+                        title: InkWell(
+                          onTap: _pickDate,
+                          borderRadius: BorderRadius.circular(4),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 4),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.edit_calendar_outlined,
+                                  size: 18,
+                                  color: Theme.of(context).colorScheme.outline,
                                 ),
-                              ),
-                            ],
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    DateFormat(
+                                      'EEEE, MMMM d, yyyy',
+                                    ).format(_selectedDate),
+                                    style: const TextStyle(fontSize: 14),
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-                  const Divider(),
-                  _buildTimetableSection(),
-                ],
+                    const Divider(),
+                    _buildTimetableSection(),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
-    ));
+    );
   }
 }

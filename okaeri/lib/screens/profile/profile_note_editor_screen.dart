@@ -137,10 +137,7 @@ class _NoteEditorScreenState extends State<NoteEditorScreen>
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: Text(
-              'Delete',
-              style: TextStyle(color: Theme.of(context).colorScheme.error),
-            ),
+            child: Text('Delete'),
           ),
         ],
       ),
@@ -157,73 +154,77 @@ class _NoteEditorScreenState extends State<NoteEditorScreen>
 
   @override
   Widget build(BuildContext context) {
-    return guardUnsavedChanges(Scaffold(
-      appBar: AppBar(
-        title: Text(_isNew ? 'New $_label' : 'Edit $_label'),
-        actions: [
-          if (!_isNew)
+    return guardUnsavedChanges(
+      Scaffold(
+        appBar: AppBar(
+          title: Text(_isNew ? 'New $_label' : 'Edit $_label'),
+          actions: [
+            if (!_isNew)
+              IconButton(
+                icon: const Icon(Icons.delete_outline),
+                onPressed: _delete,
+              ),
             IconButton(
-              icon: const Icon(Icons.delete_outline),
-              onPressed: _delete,
-            ),
-          IconButton(
-            icon: _isSaving
-                ? const SizedBox(
-                    height: 20,
-                    width: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : Icon(
-                    Icons.check,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-            onPressed: _isSaving ? null : _save,
-          ),
-        ],
-      ),
-
-      body: SafeArea(
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: TextField(
-                controller: _titleController,
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-                decoration: const InputDecoration(
-                  hintText: 'Untitled',
-                  border: InputBorder.none,
-                ),
-              ),
-            ),
-
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(18, 20, 18, 20),
-                child: quill.QuillEditor.basic(controller: _quillController),
-              ),
-            ),
-
-            Material(
-              elevation: 8,
-              color: Theme.of(context).colorScheme.surface,
-              child: SafeArea(
-                top: false,
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 6,
-                  ),
-                  child: quill.QuillSimpleToolbar(controller: _quillController),
-                ),
-              ),
+              icon: _isSaving
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : Icon(
+                      Icons.check,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+              onPressed: _isSaving ? null : _save,
             ),
           ],
         ),
+
+        body: SafeArea(
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: TextField(
+                  controller: _titleController,
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                  decoration: const InputDecoration(
+                    hintText: 'Untitled',
+                    border: InputBorder.none,
+                  ),
+                ),
+              ),
+
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(18, 20, 18, 20),
+                  child: quill.QuillEditor.basic(controller: _quillController),
+                ),
+              ),
+
+              Material(
+                elevation: 8,
+                color: Theme.of(context).colorScheme.surface,
+                child: SafeArea(
+                  top: false,
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 6,
+                    ),
+                    child: quill.QuillSimpleToolbar(
+                      controller: _quillController,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
-    ));
+    );
   }
 }

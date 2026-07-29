@@ -121,12 +121,7 @@ Future<void> showPeriodEntrySheet(
                               existing.id,
                             );
                           },
-                          child: Text(
-                            'Delete',
-                            style: TextStyle(
-                              color: Theme.of(sheetContext).colorScheme.error,
-                            ),
-                          ),
+                          child: Text('Delete'),
                         ),
                       const Spacer(),
                       TextButton(

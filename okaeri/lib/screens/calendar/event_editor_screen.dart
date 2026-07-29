@@ -174,10 +174,7 @@ class _EventEditorScreenState extends State<EventEditorScreen>
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: Text(
-              'Delete',
-              style: TextStyle(color: Theme.of(context).colorScheme.error),
-            ),
+            child: Text('Delete'),
           ),
         ],
       ),
@@ -193,119 +190,128 @@ class _EventEditorScreenState extends State<EventEditorScreen>
 
   @override
   Widget build(BuildContext context) {
-    return guardUnsavedChanges(Scaffold(
-      appBar: AppBar(
-        title: Text(_isEditing ? 'Edit Event' : 'New Event'),
-        actions: [
-          if (_isEditing)
+    return guardUnsavedChanges(
+      Scaffold(
+        appBar: AppBar(
+          title: Text(_isEditing ? 'Edit Event' : 'New Event'),
+          actions: [
+            if (_isEditing)
+              IconButton(
+                icon: const Icon(Icons.delete_outline),
+                onPressed: _delete,
+              ),
             IconButton(
-              icon: const Icon(Icons.delete_outline),
-              onPressed: _delete,
-            ),
-          IconButton(
-            icon: _isSaving
-                ? const SizedBox(
-                    height: 20,
-                    width: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : Icon(
-                    Icons.check,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-            onPressed: _isSaving ? null : _save,
-          ),
-        ],
-      ),
-      body: SafeArea(
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: TextField(
-                controller: _titleController,
-                style: const TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                ),
-                decoration: const InputDecoration(
-                  hintText: 'Untitled',
-                  border: InputBorder.none,
-                ),
-              ),
-            ),
-            Theme(
-              data: Theme.of(
-                context,
-              ).copyWith(dividerColor: Colors.transparent),
-              child: ExpansionTile(
-                tilePadding: const EdgeInsets.symmetric(horizontal: 16),
-                initiallyExpanded: false,
-                title: InkWell(
-                  onTap: _pickDate,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 4),
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.edit_calendar_outlined,
-                          size: 18,
-                          color: Theme.of(context).colorScheme.outline,
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            DateFormat(
-                              'EEEE, MMMM d, yyyy',
-                            ).format(_selectedDate),
-                            style: const TextStyle(fontSize: 14),
-                          ),
-                        ),
-                      ],
+              icon: _isSaving
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : Icon(
+                      Icons.check,
+                      color: Theme.of(context).colorScheme.primary,
                     ),
-                  ),
-                ),
-                children: [
-                  SwitchListTile(
-                    title: const Text('Repeats every year'),
-                    subtitle: const Text('Good for birthdays & anniversaries'),
-                    value: _isRepeating,
-                    onChanged: (v) => setState(() => _isRepeating = v),
-                  ),
-                  SwitchListTile(
-                    title: const Text('Mark as important'),
-                    subtitle: const Text('Shows up on the Home dashboard'),
-                    value: _isImportant,
-                    onChanged: (v) => setState(() => _isImportant = v),
-                  ),
-                ],
-              ),
-            ),
-            const Divider(),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(12),
-                child: quill.QuillEditor.basic(controller: _quillController),
-              ),
-            ),
-            Material(
-              elevation: 8,
-              color: Theme.of(context).colorScheme.surface,
-              child: SafeArea(
-                top: false,
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 6,
-                  ),
-                  child: quill.QuillSimpleToolbar(controller: _quillController),
-                ),
-              ),
+              onPressed: _isSaving ? null : _save,
             ),
           ],
         ),
+        body: SafeArea(
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
+                child: TextField(
+                  controller: _titleController,
+                  style: const TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  decoration: const InputDecoration(
+                    hintText: 'Untitled',
+                    border: InputBorder.none,
+                  ),
+                ),
+              ),
+              Theme(
+                data: Theme.of(
+                  context,
+                ).copyWith(dividerColor: Colors.transparent),
+                child: ExpansionTile(
+                  tilePadding: const EdgeInsets.symmetric(horizontal: 16),
+                  initiallyExpanded: false,
+                  title: InkWell(
+                    onTap: _pickDate,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 4),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.edit_calendar_outlined,
+                            size: 18,
+                            color: Theme.of(context).colorScheme.outline,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              DateFormat(
+                                'EEEE, MMMM d, yyyy',
+                              ).format(_selectedDate),
+                              style: const TextStyle(fontSize: 14),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  children: [
+                    SwitchListTile(
+                      title: const Text('Repeats every year'),
+                      subtitle: const Text(
+                        'Good for birthdays & anniversaries',
+                      ),
+                      value: _isRepeating,
+                      onChanged: (v) => setState(() => _isRepeating = v),
+                    ),
+                    SwitchListTile(
+                      title: const Text('Mark as important'),
+                      subtitle: const Text('Shows up on the Home dashboard'),
+                      value: _isImportant,
+                      onChanged: (v) => setState(() => _isImportant = v),
+                    ),
+                  ],
+                ),
+              ),
+              const Divider(),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: quill.QuillEditor.basic(controller: _quillController),
+                ),
+              ),
+              Material(
+                elevation: 8,
+                color: Theme.of(context).colorScheme.surface,
+                child: SafeArea(
+                  top: false,
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 6,
+                    ),
+                    child: quill.QuillSimpleToolbar(
+                      controller: _quillController,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
-    ));
+    );
   }
 }

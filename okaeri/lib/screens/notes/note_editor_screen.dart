@@ -72,7 +72,9 @@ class _NoteEditorScreenState extends State<NoteEditorScreen>
       _isShared = widget.initialVisibility == 'shared';
       _quillController = quill.QuillController.basic();
       _savedTitle = '';
-      _savedContentJson = jsonEncode(_quillController.document.toDelta().toJson());
+      _savedContentJson = jsonEncode(
+        _quillController.document.toDelta().toJson(),
+      );
     }
     _savedIsShared = _isShared;
 
@@ -143,10 +145,7 @@ class _NoteEditorScreenState extends State<NoteEditorScreen>
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: Text(
-              'Delete',
-              style: TextStyle(color: Theme.of(context).colorScheme.error),
-            ),
+            child: Text('Delete'),
           ),
         ],
       ),
@@ -159,101 +158,104 @@ class _NoteEditorScreenState extends State<NoteEditorScreen>
 
   @override
   Widget build(BuildContext context) {
-    return guardUnsavedChanges(Scaffold(
-      appBar: AppBar(
-        title: Text(_isEditing ? 'Edit Note' : 'New Note'),
-        actions: [
-          if (_isEditing)
+    return guardUnsavedChanges(
+      Scaffold(
+        appBar: AppBar(
+          title: Text(_isEditing ? 'Edit Note' : 'New Note'),
+          actions: [
+            if (_isEditing)
+              IconButton(
+                icon: const Icon(Icons.delete_outline),
+                onPressed: _delete,
+              ),
             IconButton(
-              icon: const Icon(Icons.delete_outline),
-              onPressed: _delete,
-            ),
-          IconButton(
-            icon: _isSaving
-                ? const SizedBox(
-                    height: 20,
-                    width: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : Icon(
-                    Icons.check,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-            onPressed: _isSaving ? null : _save,
-          ),
-        ],
-      ),
-
-      body: SafeArea(
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: TextField(
-                controller: _titleController,
-                style: const TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.w700,
-                ),
-                decoration: const InputDecoration(
-                  hintText: "Untitled",
-                  border: InputBorder.none,
-                ),
-              ),
-            ),
-
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Row(
-                children: [
-                  Icon(
-                    _isShared ? Icons.home_outlined : Icons.lock_outline,
-                    size: 18,
-                    color: Theme.of(context).colorScheme.outline,
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    _isShared ? 'Shared with your partner' : 'Private note',
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.outline,
+              icon: _isSaving
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : Icon(
+                      Icons.check,
+                      color: Theme.of(context).colorScheme.primary,
                     ),
-                  ),
-                  const Spacer(),
-                  Switch(
-                    value: _isShared,
-                    onChanged: (v) => setState(() => _isShared = v),
-                  ),
-                ],
-              ),
-            ),
-
-            const Divider(),
-
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(18, 20, 18, 20),
-                child: quill.QuillEditor.basic(controller: _quillController),
-              ),
-            ),
-
-            Material(
-              elevation: 8,
-              color: Theme.of(context).colorScheme.surface,
-              child: SafeArea(
-                top: false,
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 6,
-                  ),
-                  child: quill.QuillSimpleToolbar(controller: _quillController),
-                ),
-              ),
+              onPressed: _isSaving ? null : _save,
             ),
           ],
         ),
-      ),
+
+        body: SafeArea(
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: TextField(
+                  controller: _titleController,
+                  style: const TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.w700,
+                  ),
+                  decoration: const InputDecoration(
+                    hintText: "Untitled",
+                    border: InputBorder.none,
+                  ),
+                ),
+              ),
+
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Row(
+                  children: [
+                    Icon(
+                      _isShared ? Icons.home_outlined : Icons.lock_outline,
+                      size: 18,
+                      color: Theme.of(context).colorScheme.outline,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      _isShared ? 'Shared with your partner' : 'Private note',
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.outline,
+                      ),
+                    ),
+                    const Spacer(),
+                    Switch(
+                      value: _isShared,
+                      onChanged: (v) => setState(() => _isShared = v),
+                    ),
+                  ],
+                ),
+              ),
+
+              const Divider(),
+
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(18, 20, 18, 20),
+                  child: quill.QuillEditor.basic(controller: _quillController),
+                ),
+              ),
+
+              Material(
+                elevation: 8,
+                color: Theme.of(context).colorScheme.surface,
+                child: SafeArea(
+                  top: false,
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 6,
+                    ),
+                    child: quill.QuillSimpleToolbar(
+                      controller: _quillController,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

@@ -48,10 +48,7 @@ mixin UnsavedChangesGuard<T extends StatefulWidget> on State<T> {
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: Text(
-              'Discard',
-              style: TextStyle(color: Theme.of(context).colorScheme.error),
-            ),
+            child: Text('Discard'),
           ),
         ],
       ),
