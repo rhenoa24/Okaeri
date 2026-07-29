@@ -5,6 +5,7 @@ import 'package:flutter_quill/flutter_quill.dart' as quill;
 
 import '../../models/user_note.dart';
 import '../../services/profile_notes_service.dart';
+import '../../widgets/unsaved_changes_guard.dart';
 
 /// Result handed back to the profile screen so it can update its local
 /// list without a full refetch. TODO: once notes are persisted, this can
@@ -32,7 +33,8 @@ class NoteEditorScreen extends StatefulWidget {
   State<NoteEditorScreen> createState() => _NoteEditorScreenState();
 }
 
-class _NoteEditorScreenState extends State<NoteEditorScreen> {
+class _NoteEditorScreenState extends State<NoteEditorScreen>
+    with UnsavedChangesGuard<NoteEditorScreen> {
   final ProfileNotesService _notesService = ProfileNotesService();
 
   late final TextEditingController _titleController;
@@ -40,7 +42,17 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
 
   bool _isSaving = false;
 
+  // Snapshot of the note's state as-loaded (or as-last-saved).
+  late String _savedTitle;
+  late String _savedContentJson;
+
   bool get _isNew => widget.note == null;
+
+  @override
+  bool get hasUnsavedChanges =>
+      _titleController.text.trim() != _savedTitle.trim() ||
+      jsonEncode(_quillController.document.toDelta().toJson()) !=
+          _savedContentJson;
 
   @override
   void initState() {
@@ -61,10 +73,22 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
       } catch (_) {
         _quillController = quill.QuillController.basic();
       }
+      _savedContentJson = widget.note!.contentJson;
     } else {
       _quillController = quill.QuillController.basic();
+      _savedContentJson = jsonEncode(
+        _quillController.document.toDelta().toJson(),
+      );
     }
+    _savedTitle = widget.note?.title ?? '';
+
+    // Neither controller triggers a rebuild on its own, but the guard's
+    // canPop is only re-evaluated on rebuild — so nudge one on every edit.
+    _titleController.addListener(_onEdited);
+    _quillController.addListener(_onEdited);
   }
+
+  void _onEdited() => setState(() {});
 
   @override
   void dispose() {
@@ -89,6 +113,9 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
     );
 
     await _notesService.saveNote(uid: widget.uid, note: note);
+
+    _savedTitle = note.title;
+    _savedContentJson = note.contentJson;
 
     if (!mounted) return;
 
@@ -130,7 +157,7 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return guardUnsavedChanges(Scaffold(
       appBar: AppBar(
         title: Text(_isNew ? 'New $_label' : 'Edit $_label'),
         actions: [
@@ -197,6 +224,6 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
           ],
         ),
       ),
-    );
+    ));
   }
 }

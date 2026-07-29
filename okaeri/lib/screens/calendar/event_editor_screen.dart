@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
 import '../../models/calendar_note.dart';
 import '../../services/calendar_service.dart';
+import '../../widgets/unsaved_changes_guard.dart';
 
 String _formatDate(DateTime d) =>
     '${d.year.toString().padLeft(4, '0')}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
@@ -25,7 +26,8 @@ class EventEditorScreen extends StatefulWidget {
   State<EventEditorScreen> createState() => _EventEditorScreenState();
 }
 
-class _EventEditorScreenState extends State<EventEditorScreen> {
+class _EventEditorScreenState extends State<EventEditorScreen>
+    with UnsavedChangesGuard<EventEditorScreen> {
   final CalendarService _calendarService = CalendarService();
   final _titleController = TextEditingController();
   late quill.QuillController _quillController;
@@ -37,7 +39,23 @@ class _EventEditorScreenState extends State<EventEditorScreen> {
 
   late final String myId;
 
+  // Snapshot of the event's state as-loaded (or as-last-saved).
+  late String _savedTitle;
+  late String _savedContentJson;
+  late String _savedDate;
+  late bool _savedIsRepeating;
+  late bool _savedIsImportant;
+
   bool get _isEditing => widget.existingNote != null;
+
+  @override
+  bool get hasUnsavedChanges =>
+      _titleController.text.trim() != _savedTitle.trim() ||
+      _formatDate(_selectedDate) != _savedDate ||
+      _isRepeating != _savedIsRepeating ||
+      _isImportant != _savedIsImportant ||
+      jsonEncode(_quillController.document.toDelta().toJson()) !=
+          _savedContentJson;
 
   @override
   void initState() {
@@ -59,11 +77,28 @@ class _EventEditorScreenState extends State<EventEditorScreen> {
       } catch (_) {
         _quillController = quill.QuillController.basic();
       }
+      _savedTitle = note.title;
+      _savedContentJson = note.contentJson;
     } else {
       _selectedDate = widget.initialDate;
       _quillController = quill.QuillController.basic();
+      _savedTitle = '';
+      _savedContentJson = jsonEncode(
+        _quillController.document.toDelta().toJson(),
+      );
     }
+    _savedDate = _formatDate(_selectedDate);
+    _savedIsRepeating = _isRepeating;
+    _savedIsImportant = _isImportant;
+
+    // Neither controller triggers a rebuild on its own, but the guard's
+    // canPop is only re-evaluated on rebuild — so nudge one on every edit.
+    // (The two switches already call setState via onChanged.)
+    _titleController.addListener(_onEdited);
+    _quillController.addListener(_onEdited);
   }
+
+  void _onEdited() => setState(() {});
 
   @override
   void dispose() {
@@ -116,6 +151,12 @@ class _EventEditorScreenState extends State<EventEditorScreen> {
       );
     }
 
+    _savedTitle = title;
+    _savedContentJson = contentJson;
+    _savedDate = date;
+    _savedIsRepeating = _isRepeating;
+    _savedIsImportant = _isImportant;
+
     if (mounted) Navigator.pop(context);
   }
 
@@ -152,7 +193,7 @@ class _EventEditorScreenState extends State<EventEditorScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return guardUnsavedChanges(Scaffold(
       appBar: AppBar(
         title: Text(_isEditing ? 'Edit Event' : 'New Event'),
         actions: [
@@ -265,6 +306,6 @@ class _EventEditorScreenState extends State<EventEditorScreen> {
           ],
         ),
       ),
-    );
+    ));
   }
 }

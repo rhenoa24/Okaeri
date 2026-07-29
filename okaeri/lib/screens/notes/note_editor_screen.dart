@@ -4,6 +4,7 @@ import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../models/note.dart';
 import '../../services/notes_service.dart';
+import '../../widgets/unsaved_changes_guard.dart';
 
 class NoteEditorScreen extends StatefulWidget {
   final String coupleId;
@@ -21,14 +22,14 @@ class NoteEditorScreen extends StatefulWidget {
   State<NoteEditorScreen> createState() => _NoteEditorScreenState();
 }
 
-class _NoteEditorScreenState extends State<NoteEditorScreen> {
+class _NoteEditorScreenState extends State<NoteEditorScreen>
+    with UnsavedChangesGuard<NoteEditorScreen> {
   final NotesService _notesService = NotesService();
   final _titleController = TextEditingController();
   late quill.QuillController _quillController;
 
   late bool _isShared;
   bool _isSaving = false;
-  bool _hasUnsavedChanges = false;
 
   late final String myId;
 
@@ -39,6 +40,13 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
   late bool _savedIsShared;
 
   bool get _isEditing => widget.existingNote != null;
+
+  @override
+  bool get hasUnsavedChanges =>
+      _titleController.text.trim() != _savedTitle.trim() ||
+      _isShared != _savedIsShared ||
+      jsonEncode(_quillController.document.toDelta().toJson()) !=
+          _savedContentJson;
 
   @override
   void initState() {
@@ -68,47 +76,18 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
     }
     _savedIsShared = _isShared;
 
-    _titleController.addListener(_recomputeDirty);
-    _quillController.addListener(_recomputeDirty);
+    // Neither controller triggers a rebuild on its own, but the guard's
+    // canPop is only re-evaluated on rebuild — so nudge one on every edit.
+    _titleController.addListener(_onEdited);
+    _quillController.addListener(_onEdited);
   }
 
-  void _recomputeDirty() {
-    final dirty = _titleController.text.trim() != _savedTitle.trim() ||
-        _isShared != _savedIsShared ||
-        jsonEncode(_quillController.document.toDelta().toJson()) != _savedContentJson;
-    if (dirty != _hasUnsavedChanges) {
-      setState(() => _hasUnsavedChanges = dirty);
-    }
-  }
-
-  Future<bool> _confirmDiscard() async {
-    final result = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Discard changes?'),
-        content: const Text('You have unsaved changes that will be lost.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Keep editing'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: Text(
-              'Discard',
-              style: TextStyle(color: Theme.of(context).colorScheme.error),
-            ),
-          ),
-        ],
-      ),
-    );
-    return result ?? false;
-  }
+  void _onEdited() => setState(() {});
 
   @override
   void dispose() {
-    _titleController.removeListener(_recomputeDirty);
-    _quillController.removeListener(_recomputeDirty);
+    _titleController.removeListener(_onEdited);
+    _quillController.removeListener(_onEdited);
     _titleController.dispose();
     _quillController.dispose();
     super.dispose();
@@ -146,7 +125,6 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
     _savedTitle = title;
     _savedContentJson = contentJson;
     _savedIsShared = _isShared;
-    _hasUnsavedChanges = false;
 
     if (mounted) Navigator.pop(context);
   }
@@ -181,16 +159,7 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return PopScope(
-      canPop: !_hasUnsavedChanges,
-      onPopInvokedWithResult: (didPop, result) async {
-        if (didPop) return;
-        final shouldDiscard = await _confirmDiscard();
-        if (shouldDiscard && mounted) {
-          Navigator.pop(context);
-        }
-      },
-      child: Scaffold(
+    return guardUnsavedChanges(Scaffold(
       appBar: AppBar(
         title: Text(_isEditing ? 'Edit Note' : 'New Note'),
         actions: [

@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
 import '../../models/plan.dart';
 import '../../services/calendar_service.dart';
+import '../../widgets/unsaved_changes_guard.dart';
 
 String _formatDate(DateTime d) =>
     '${d.year.toString().padLeft(4, '0')}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
@@ -22,8 +23,16 @@ class _EditableRow {
   TimeOfDay time;
   final TextEditingController textController;
 
-  _EditableRow({required this.id, required this.time, required String text})
-    : textController = TextEditingController(text: text);
+  _EditableRow({
+    required this.id,
+    required this.time,
+    required String text,
+    VoidCallback? onTextChanged,
+  }) : textController = TextEditingController(text: text) {
+    if (onTextChanged != null) {
+      textController.addListener(onTextChanged);
+    }
+  }
 
   void dispose() => textController.dispose();
 }
@@ -44,7 +53,8 @@ class PlanEditorScreen extends StatefulWidget {
   State<PlanEditorScreen> createState() => _PlanEditorScreenState();
 }
 
-class _PlanEditorScreenState extends State<PlanEditorScreen> {
+class _PlanEditorScreenState extends State<PlanEditorScreen>
+    with UnsavedChangesGuard<PlanEditorScreen> {
   final CalendarService _calendarService = CalendarService();
   final _titleController = TextEditingController();
 
@@ -56,7 +66,31 @@ class _PlanEditorScreenState extends State<PlanEditorScreen> {
 
   late final String myId;
 
+  // Snapshot of the plan's state as-loaded (or as-last-saved). The
+  // timetable snapshot is a canonical "time|text" string per row, sorted
+  // by time, so it doesn't matter what order rows were added/removed in.
+  late String _savedTitle;
+  late String _savedDate;
+  late String _savedTimetableSignature;
+
   bool get _isEditing => widget.existingPlan != null;
+
+  @override
+  bool get hasUnsavedChanges =>
+      _titleController.text.trim() != _savedTitle.trim() ||
+      _formatDate(_selectedDate) != _savedDate ||
+      _currentTimetableSignature() != _savedTimetableSignature;
+
+  String _currentTimetableSignature() {
+    final entries = _rows
+        .map(
+          (r) => '${_formatTime(r.time)}|${r.textController.text.trim()}',
+        )
+        .where((s) => !s.endsWith('|'))
+        .toList()
+      ..sort();
+    return entries.join(';');
+  }
 
   @override
   void initState() {
@@ -73,13 +107,25 @@ class _PlanEditorScreenState extends State<PlanEditorScreen> {
             id: entry.id,
             time: _parseTime(entry.time),
             text: entry.text,
+            onTextChanged: _onEdited,
           ),
         );
       }
+      _savedTitle = plan.title;
     } else {
       _selectedDate = widget.initialDate;
+      _savedTitle = '';
     }
+    _savedDate = _formatDate(_selectedDate);
+    _savedTimetableSignature = _currentTimetableSignature();
+
+    _titleController.addListener(_onEdited);
   }
+
+  // Neither TextEditingController triggers a rebuild on its own, but the
+  // guard's canPop is only re-evaluated on rebuild — so nudge one here.
+  // (Date changes and row add/remove/time-edit already call setState.)
+  void _onEdited() => setState(() {});
 
   @override
   void dispose() {
@@ -110,7 +156,12 @@ class _PlanEditorScreenState extends State<PlanEditorScreen> {
     if (picked == null) return;
     setState(() {
       _rows.add(
-        _EditableRow(id: 'row_${_rowIdCounter++}', time: picked, text: ''),
+        _EditableRow(
+          id: 'row_${_rowIdCounter++}',
+          time: picked,
+          text: '',
+          onTextChanged: _onEdited,
+        ),
       );
     });
   }
@@ -163,6 +214,10 @@ class _PlanEditorScreenState extends State<PlanEditorScreen> {
         createdBy: myId,
       );
     }
+
+    _savedTitle = title;
+    _savedDate = date;
+    _savedTimetableSignature = _currentTimetableSignature();
 
     if (mounted) Navigator.pop(context);
   }
@@ -283,7 +338,7 @@ class _PlanEditorScreenState extends State<PlanEditorScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return guardUnsavedChanges(Scaffold(
       appBar: AppBar(
         title: Text(_isEditing ? 'Edit Plan' : 'New Plan'),
         actions: [
@@ -374,6 +429,6 @@ class _PlanEditorScreenState extends State<PlanEditorScreen> {
           ],
         ),
       ),
-    );
+    ));
   }
 }
