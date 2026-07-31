@@ -28,11 +28,7 @@ class NotificationSender {
           'Content-Type': 'application/json',
           'X-Okaeri-Secret': _sharedSecret,
         },
-        body: jsonEncode({
-          'token': token,
-          'title': title,
-          if (body != null) 'body': body,
-        }),
+        body: jsonEncode({'token': token, 'title': title, 'body': ?body}),
       );
 
       if (response.statusCode != 200) {

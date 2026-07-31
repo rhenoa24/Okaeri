@@ -528,7 +528,7 @@ class _PeriodTrackerScreenState extends State<PeriodTrackerScreen> {
         decoration = BoxDecoration(
           color: colorScheme.primary,
           shape: BoxShape.circle,
-          border: Border.all(color: colorScheme.onPrimaryContainer, width: 2),
+          // border: Border.all(color: colorScheme.onSurface.withValues(alpha: 0.1), width: 2),
         );
         textColor = colorScheme.onPrimary;
         break;

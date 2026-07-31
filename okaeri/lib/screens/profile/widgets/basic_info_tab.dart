@@ -471,7 +471,7 @@ class _BasicInfoEditViewState extends State<_BasicInfoEditView> {
 
         _FieldLabel('MBTI'),
         DropdownButtonFormField<String>(
-          value: widget.details.mbti,
+          initialValue: widget.details.mbti,
           isExpanded: true,
           decoration: const InputDecoration(
             border: OutlineInputBorder(),
@@ -491,7 +491,7 @@ class _BasicInfoEditViewState extends State<_BasicInfoEditView> {
         const SizedBox(height: 20),
         _FieldLabel('Zodiac'),
         DropdownButtonFormField<String>(
-          value: widget.details.zodiac,
+          initialValue: widget.details.zodiac,
           isExpanded: true,
           decoration: const InputDecoration(
             border: OutlineInputBorder(),

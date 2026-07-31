@@ -63,9 +63,14 @@ class PeriodCycleUtils {
     final anchor = utcDay(DateTime.parse(sorted.last.startDate));
 
     final diffDays = target.difference(anchor).inDays;
-    final cycleIndex = diffDays >= 0
-        ? (diffDays / cycleLen).floor()
-        : ((diffDays - cycleLen + 1) / cycleLen).floor();
+    // Plain floor division already does the right thing for dates before
+    // the anchor too — e.g. -47 days at a 28-day cycle length correctly
+    // floors to cycle index -2, landing cycleStart 56 days before anchor.
+    // (A previous version special-cased diffDays < 0 with a shifted
+    // formula that landed one cycle too far back, which pushed cycleDay
+    // out of its valid 1..cycleLen range and made ovulation/fertile
+    // matches silently fail for any month before the most recent entry.)
+    final cycleIndex = (diffDays / cycleLen).floor();
     final cycleStart = anchor.add(Duration(days: cycleIndex * cycleLen));
     final ovulationDay = cycleStart.add(Duration(days: cycleLen - 14));
     final fertileStart = ovulationDay.subtract(const Duration(days: 5));
