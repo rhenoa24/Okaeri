@@ -77,19 +77,10 @@ class _NoteEditorScreenState extends State<NoteEditorScreen>
       );
     }
     _savedIsShared = _isShared;
-
-    // Neither controller triggers a rebuild on its own, but the guard's
-    // canPop is only re-evaluated on rebuild — so nudge one on every edit.
-    _titleController.addListener(_onEdited);
-    _quillController.addListener(_onEdited);
   }
-
-  void _onEdited() => setState(() {});
 
   @override
   void dispose() {
-    _titleController.removeListener(_onEdited);
-    _quillController.removeListener(_onEdited);
     _titleController.dispose();
     _quillController.dispose();
     super.dispose();

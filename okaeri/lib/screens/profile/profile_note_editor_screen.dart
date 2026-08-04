@@ -81,14 +81,7 @@ class _NoteEditorScreenState extends State<NoteEditorScreen>
       );
     }
     _savedTitle = widget.note?.title ?? '';
-
-    // Neither controller triggers a rebuild on its own, but the guard's
-    // canPop is only re-evaluated on rebuild — so nudge one on every edit.
-    _titleController.addListener(_onEdited);
-    _quillController.addListener(_onEdited);
   }
-
-  void _onEdited() => setState(() {});
 
   @override
   void dispose() {

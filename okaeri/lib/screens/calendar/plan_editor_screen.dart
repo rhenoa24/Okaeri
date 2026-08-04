@@ -23,16 +23,8 @@ class _EditableRow {
   TimeOfDay time;
   final TextEditingController textController;
 
-  _EditableRow({
-    required this.id,
-    required this.time,
-    required String text,
-    VoidCallback? onTextChanged,
-  }) : textController = TextEditingController(text: text) {
-    if (onTextChanged != null) {
-      textController.addListener(onTextChanged);
-    }
-  }
+  _EditableRow({required this.id, required this.time, required String text})
+    : textController = TextEditingController(text: text);
 
   void dispose() => textController.dispose();
 }
@@ -108,7 +100,6 @@ class _PlanEditorScreenState extends State<PlanEditorScreen>
             id: entry.id,
             time: _parseTime(entry.time),
             text: entry.text,
-            onTextChanged: _onEdited,
           ),
         );
       }
@@ -119,14 +110,7 @@ class _PlanEditorScreenState extends State<PlanEditorScreen>
     }
     _savedDate = _formatDate(_selectedDate);
     _savedTimetableSignature = _currentTimetableSignature();
-
-    _titleController.addListener(_onEdited);
   }
-
-  // Neither TextEditingController triggers a rebuild on its own, but the
-  // guard's canPop is only re-evaluated on rebuild — so nudge one here.
-  // (Date changes and row add/remove/time-edit already call setState.)
-  void _onEdited() => setState(() {});
 
   @override
   void dispose() {
@@ -157,12 +141,7 @@ class _PlanEditorScreenState extends State<PlanEditorScreen>
     if (picked == null) return;
     setState(() {
       _rows.add(
-        _EditableRow(
-          id: 'row_${_rowIdCounter++}',
-          time: picked,
-          text: '',
-          onTextChanged: _onEdited,
-        ),
+        _EditableRow(id: 'row_${_rowIdCounter++}', time: picked, text: ''),
       );
     });
   }
@@ -237,7 +216,10 @@ class _PlanEditorScreenState extends State<PlanEditorScreen>
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: Text('Delete'),
+            child: Text(
+              'Delete',
+              style: TextStyle(color: Theme.of(context).colorScheme.error),
+            ),
           ),
         ],
       ),

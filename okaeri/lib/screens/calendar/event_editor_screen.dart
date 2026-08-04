@@ -90,15 +90,7 @@ class _EventEditorScreenState extends State<EventEditorScreen>
     _savedDate = _formatDate(_selectedDate);
     _savedIsRepeating = _isRepeating;
     _savedIsImportant = _isImportant;
-
-    // Neither controller triggers a rebuild on its own, but the guard's
-    // canPop is only re-evaluated on rebuild — so nudge one on every edit.
-    // (The two switches already call setState via onChanged.)
-    _titleController.addListener(_onEdited);
-    _quillController.addListener(_onEdited);
   }
-
-  void _onEdited() => setState(() {});
 
   @override
   void dispose() {

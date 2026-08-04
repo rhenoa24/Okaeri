@@ -10,22 +10,31 @@ import 'package:flutter/material.dart';
 ///    successful save, so popping right after saving doesn't warn).
 /// 3. In `build`, wrap the screen's root widget:
 ///    `return guardUnsavedChanges(Scaffold(...));`
-/// 4. Make sure any `TextEditingController` / `QuillController` that feeds
-///    `hasUnsavedChanges` calls `setState` on change (e.g.
-///    `controller.addListener(() => setState(() {}))`), otherwise the
-///    guard won't notice edits until something else triggers a rebuild.
+///
+/// `hasUnsavedChanges` is evaluated fresh at the moment the user tries to
+/// leave, not cached from the last rebuild — so there's no need to wire up
+/// controller listeners just to keep the guard in sync. (Don't add those:
+/// a `setState` on every keystroke forces controllers like Quill's to
+/// rebuild constantly, which can drop focus and make typing feel broken.)
 ///
 /// Both the system back gesture and a default `AppBar` back button route
-/// through `Navigator.pop`, so both are covered by this one guard.
+/// through `Navigator.pop`/`maybePop`, so both are covered by this one
+/// guard.
 mixin UnsavedChangesGuard<T extends StatefulWidget> on State<T> {
   /// Subclasses report whether there's currently something to lose.
   bool get hasUnsavedChanges;
 
   Widget guardUnsavedChanges(Widget child) {
     return PopScope(
-      canPop: !hasUnsavedChanges,
+      canPop: false,
       onPopInvokedWithResult: (didPop, result) async {
         if (didPop) return;
+
+        if (!hasUnsavedChanges) {
+          if (mounted) Navigator.pop(context);
+          return;
+        }
+
         final shouldDiscard = await _confirmDiscard();
         if (shouldDiscard && mounted) {
           Navigator.pop(context);
