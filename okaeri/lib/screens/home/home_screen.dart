@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
+import 'package:okaeri/screens/calendar/rendezvous_diary_screen.dart';
 import '../../models/message.dart';
 import '../../models/calendar_note.dart';
 import '../../models/plan.dart';
@@ -515,6 +516,54 @@ class _HomeScreenState extends State<HomeScreen> {
           const SizedBox(height: 16),
 
           PeriodCountdownCard(coupleId: widget.coupleId),
+
+          _SectionCard(
+            icon: Icons.auto_stories_outlined,
+            title: 'Rendezvous Diary',
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) =>
+                      RendezvousDiaryScreen(coupleId: widget.coupleId),
+                ),
+              );
+            },
+            child: StreamBuilder<List<CalendarNote>>(
+              stream: _calendarService.watchAllNotes(widget.coupleId),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return const SizedBox(
+                    height: 24,
+                    child: Center(
+                      child: SizedBox(
+                        height: 16,
+                        width: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
+                    ),
+                  );
+                }
+                final entries = rendezvousEntries(snapshot.data!);
+                if (entries.isEmpty) {
+                  return const _EmptyState(text: 'No diary entries yet ❤️‍🔥');
+                }
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: entries
+                      .take(3)
+                      .map(
+                        (n) => _ImportantDatePreviewRow(
+                          note: n,
+                          occurrence: n.parsedDate,
+                        ),
+                      )
+                      .toList(),
+                );
+              },
+            ),
+          ),
+          const SizedBox(height: 16),
         ],
       ),
     );
