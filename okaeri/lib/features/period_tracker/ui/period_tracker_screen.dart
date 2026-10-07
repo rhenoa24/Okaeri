@@ -6,7 +6,7 @@ import 'package:intl/intl.dart';
 import '../data/period_entry.dart';
 import '../data/period_settings.dart';
 import '../data/period_service.dart';
-import '../../profile/data/user_service.dart';
+import '../../../core/user/user_service.dart';
 import '../data/period_cycle_utils.dart';
 import '../../../core/theme/app_theme.dart';
 import 'period_entry_sheet.dart';

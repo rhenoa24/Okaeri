@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import '../../data/profile_details.dart';
+import '../../../../core/user/profile_details.dart';
 
 class BasicInfoTab extends StatelessWidget {
   final bool isEditing;

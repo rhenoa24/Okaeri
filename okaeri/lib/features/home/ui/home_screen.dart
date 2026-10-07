@@ -9,7 +9,7 @@ import '../../message_board/data/message.dart';
 import '../../calendar/data/calendar_note.dart';
 import '../../calendar/data/plan.dart';
 import '../../message_board/data/message_service.dart';
-import '../../profile/data/user_service.dart';
+import '../../../core/user/user_service.dart';
 import '../../calendar/data/calendar_service.dart';
 import '../../calendar/ui/events/events_screen.dart';
 import '../../calendar/ui/plans/plans_screen.dart';

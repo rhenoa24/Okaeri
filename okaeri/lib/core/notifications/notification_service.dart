@@ -1,5 +1,5 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
-import '../../features/profile/data/user_service.dart';
+import '../user/user_service.dart';
 import 'local_notification_service.dart';
 
 class NotificationService {

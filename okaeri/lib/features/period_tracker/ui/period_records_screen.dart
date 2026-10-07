@@ -4,7 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import '../data/period_entry.dart';
 import '../data/period_service.dart';
-import '../../profile/data/user_service.dart';
+import '../../../core/user/user_service.dart';
 import 'period_entry_sheet.dart';
 
 /// Full period log — moved out of Period Tracker so the tracker screen can

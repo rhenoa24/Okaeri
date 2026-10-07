@@ -87,3 +87,121 @@ widgets
 
 firebase_options.dart
 main.dart
+
+##################################
+
+
+lib
+- app
+-- app_shell.dart
+-- auth_gate.dart
+ 
+- core 
+-- notification
+    --- local_notification_service.dart
+    --- notification_sender.dart
+    --- notification_service.dart
+-- theme
+    --- app_theme.dart
+    --- theme_controller.dart
+    --- theme_preview.dart
+-- user
+    --- user_service.dart
+    --- profile_details.dart
+-- utils
+    --- quill_text.dart
+-- widgets
+    --- avatar_circle.dart
+    --- search_bar.dart
+    --- unsaved_changes_guard.dart
+ 
+- features
+-- auth
+    --- bloc
+    --- data
+        ---- auth_service.dart
+    --- ui
+        ---- login_screen.dart
+-- calendar
+    --- bloc
+    --- data
+        ---- calendar_note.dart
+        ---- calendar_service.dart
+        ---- plan.dart
+    --- ui
+        ---- events
+            ----- event_editor_screen.dart
+            ----- events_screen.dart
+        ---- plans
+            ----- plan_editor_screen.dart
+            ----- plans_screen.dart
+        ---- calendar_screen.dart
+-- home
+    --- ui
+        ---- home_screen.dart
+-- message_board
+    --- bloc
+    --- data
+        ---- message_service.dart
+        ---- message.dart
+    --- ui
+        ---- message_card.dart
+-- moodlet
+    --- bloc
+    --- data
+        ---- moodlet_service.dart
+        ---- moodlet.dart
+    --- ui
+        ---- mood_card.dart
+        ---- moodlet_sheet.dart
+-- more
+    --- ui
+        ---- more_screen.dart
+        ---- profile_settings_screen.dart
+-- notes
+    --- bloc
+    --- data
+        ---- note.dart
+        ---- notes_service.dart
+    --- ui
+        ---- note_editor_screen.dart
+        ---- notes_screen.dart
+-- pairing
+    --- bloc
+    --- data
+        ---- couple_service.dart
+    --- ui
+        ---- pairing_screen.dart
+-- period_tracker
+    --- bloc
+    --- data
+        ---- period_cycle_utils.dart
+        ---- period_entry.dart
+        ---- period_service.dart
+        ---- period_settings.dart
+    --- ui
+        ---- period_countdown_card.dart
+        ---- period_entry_sheet.dart
+        ---- period_records_screen.dart
+        ---- period_tracker_screen.dart
+-- profile
+    --- bloc
+    --- data
+        ---- profile_notes_service.dart
+        ---- user_note.dart
+    --- ui
+        ---- widgets
+            ----- basic_info_tab.dart
+            ----- note_collection_tab.dart
+            ----- profile_header.dart
+        ---- profile_avatar_stack.dart
+        ---- profile_note_editor_screen.dart
+        ---- profile_screen.dart
+        ---- profile_sheet.dart
+-- rendezvous_diary
+    --- ui
+        ---- rendezvous_diary_card.dart
+        ---- rendezvous_diary_screen.dart
+ 
+firebase_options.dart
+main.dart
