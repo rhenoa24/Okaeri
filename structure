@@ -1,0 +1,89 @@
+models
+- calendar_note.dart
+- message.dart
+- moodlet.dart
+- note.dart
+- period_entry.dart
+- period_settings.dart
+- plan.dart
+- profile_details.dart
+- user_note.dart
+
+navigation
+- app_shell.dart
+- auth_gate.dart
+
+screens
+- auth
+-- login_screen.dart
+- calendar
+-- calendar_screen.dart
+-- event_editor_screen.dart
+-- plan_editor_screen.dart
+-- plans_screen.dart
+-- rendezvous_diary_screen.dart
+
+- home
+-- home_screen.dart
+
+- more
+-- more_screen.dart
+-- profile_settings_screen.dart
+
+- notes
+-- note_editor_screen.dart
+-- notes_screen.dart
+
+- pairing
+-- pairing_screen.dart
+
+- period_tracker
+-- period_entry_sheet.dart
+-- period_records_screen.dart
+-- period_tracker_screen.dart
+
+- profile
+-- widgets
+--- basic_info_tab.dart
+--- note_collection_tab.dart
+--- profile_header.dart
+-- profile_note_editor_screen.dart
+-- profile_screen.dart
+
+services
+- auth_service.dart
+- calendar_service.dart
+- couple_service.dart
+- local_notification_service.dart
+- message_service.dart
+- moodlet_service.dart
+- notes_service.dart
+- notification_sender.dart
+- notification_service.dart
+- period_cycle_utils.dart
+- period_service.dart
+- profile_notes_service.dart
+- user_service.dart
+
+theme
+- app_theme.dart
+- theme_controller.dart
+- theme_preview.dart
+
+ultils
+- quill_text.dart
+
+widgets
+- avatar_circle.dart
+- message_card.dart
+- mood_card.dart
+- moodlet_sheet.dart
+- period_countdown_card.dart
+- profile_avatar_stack.dart
+- profile_sheet.dart
+- rendezvous_diary_card.dart
+- search_bar.dart
+- unsaved_changes_guard.dart
+
+firebase_options.dart
+main.dart

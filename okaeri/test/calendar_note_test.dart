@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:okaeri/models/calendar_note.dart';
+import 'package:okaeri/features/calendar/data/calendar_note.dart';
 
 void main() {
   test('CalendarNote preserves contentJson when parsed and serialized', () {

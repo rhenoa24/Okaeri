@@ -3,9 +3,9 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'firebase_options.dart';
-import 'navigation/auth_gate.dart';
-import 'theme/app_theme.dart';
-import 'theme/theme_controller.dart';
+import 'app/auth_gate.dart';
+import 'core/theme/app_theme.dart';
+import 'core/theme/theme_controller.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 
 void main() async {
