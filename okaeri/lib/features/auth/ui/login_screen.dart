@@ -37,6 +37,18 @@ class _LoginScreenState extends State<LoginScreen> {
     // If error is null, authStateChanges stream will handle navigation automatically
   }
 
+  Future<void> _forgotPassword() async {
+    final error = await _authService.sendPasswordReset(_emailController.text);
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          error ?? 'If that email has an account, a reset link is on its way.',
+        ),
+      ),
+    );
+  }
+
   @override
   void dispose() {
     _emailController.dispose();
@@ -88,6 +100,14 @@ class _LoginScreenState extends State<LoginScreen> {
                       border: OutlineInputBorder(),
                     ),
                   ),
+                  if (!_isSignUp)
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: TextButton(
+                        onPressed: _isLoading ? null : _forgotPassword,
+                        child: const Text('Forgot password?'),
+                      ),
+                    ),
                   if (_errorMessage != null) ...[
                     const SizedBox(height: 12),
                     Text(

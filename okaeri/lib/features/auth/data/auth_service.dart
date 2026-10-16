@@ -6,6 +6,10 @@ import '../../../core/user/user_service.dart';
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
+  // Remembers when we last auto-sent a reset email to each address,
+  // so repeated wrong passwords don't spam the inbox.
+  final Map<String, DateTime> _lastResetAt = {};
+
   // Stream that tells the app whether someone is logged in, in real time
   Stream<User?> get authStateChanges => _auth.authStateChanges();
 
@@ -42,11 +46,66 @@ class AuthService {
     required String email,
     required String password,
   }) async {
+    final trimmed = email.trim();
+    if (trimmed.isEmpty || password.isEmpty) {
+      return 'Enter your email and password';
+    }
+
     try {
-      await _auth.signInWithEmailAndPassword(email: email, password: password);
+      await _auth.signInWithEmailAndPassword(
+        email: trimmed,
+        password: password,
+      );
       return null; // null = success
     } on FirebaseAuthException catch (e) {
-      return e.message ?? 'Sign in failed';
+      switch (e.code) {
+        // Badly formatted email: no reset email, the address can't be valid.
+        case 'invalid-email':
+          return 'That email address looks invalid';
+
+        // Wrong password or no such account (Firebase can't tell us which
+        // while email enumeration protection is on). Send the reset email.
+        case 'invalid-credential':
+        case 'wrong-password':
+          await _sendResetWithCooldown(trimmed);
+          return 'The supplied auth credential is incorrect, malformed or has expired.\n'
+              'If that email has an account, we sent a reset link to it.';
+
+        // Only appears if enumeration protection is turned off.
+        case 'user-not-found':
+          return 'No account found for that email';
+
+        case 'user-disabled':
+          return 'This account has been disabled';
+        case 'too-many-requests':
+          return 'Too many attempts. Wait a bit, or use the reset link.';
+        case 'network-request-failed':
+          return 'No connection. Check your internet and try again';
+        default:
+          return e.message ?? 'Sign in failed';
+      }
+    }
+  }
+
+  Future<void> _sendResetWithCooldown(String email) async {
+    final last = _lastResetAt[email];
+    final recentlySent =
+        last != null &&
+        DateTime.now().difference(last) < const Duration(minutes: 2);
+    if (recentlySent) return;
+    _lastResetAt[email] = DateTime.now();
+    await sendPasswordReset(email);
+  }
+
+  Future<String?> sendPasswordReset(String email) async {
+    final trimmed = email.trim();
+    if (trimmed.isEmpty) return 'Enter your email first';
+    try {
+      await _auth.sendPasswordResetEmail(email: trimmed);
+      return null;
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'invalid-email') return 'That email looks invalid';
+      return e.message ?? 'Failed to send reset email';
     }
   }
 
