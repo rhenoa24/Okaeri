@@ -46,7 +46,7 @@ class MatchHistoryScreen extends StatelessWidget {
                 MatchCard(
                   match: m,
                   onTap: () => m.isFinished
-                      ? _showDetails(context, m)
+                      ? null
                       : Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -71,7 +71,7 @@ class MatchHistoryScreen extends StatelessWidget {
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Delete this match?'),
-        content: Text('${m.playerA.name} vs ${m.playerB.name}'),
+        content: const Text('Record of this match will be lost.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
@@ -85,48 +85,6 @@ class MatchHistoryScreen extends StatelessWidget {
       ),
     );
     if (ok == true) _service.deleteMatch(coupleId, m.id);
-  }
-
-  void _showDetails(BuildContext context, TtMatch m) {
-    showModalBottomSheet<void>(
-      context: context,
-      showDragHandle: true,
-      builder: (_) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                '${m.nameOf(m.winner!)} won ${m.gamesWonA > m.gamesWonB ? m.gamesWonA : m.gamesWonB}–${m.gamesWonA > m.gamesWonB ? m.gamesWonB : m.gamesWonA}',
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-              const SizedBox(height: 4),
-              Text(formatMatchDate(m.createdAt)),
-              if (m.note.isNotEmpty) ...[
-                const SizedBox(height: 8),
-                Text('💬 ${m.note}'),
-              ],
-              const SizedBox(height: 16),
-              for (var i = 0; i < m.games.length; i++)
-                if (m.games[i].log.isNotEmpty)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 4),
-                    child: Row(
-                      children: [
-                        SizedBox(width: 70, child: Text('Game ${i + 1}')),
-                        Text(
-                          '${m.playerA.name} ${m.games[i].state.a} – ${m.games[i].state.b} ${m.playerB.name}',
-                        ),
-                      ],
-                    ),
-                  ),
-            ],
-          ),
-        ),
-      ),
-    );
   }
 }
 

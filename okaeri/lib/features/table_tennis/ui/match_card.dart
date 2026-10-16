@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../data/match.dart';
+import 'point_dots.dart';
 
 const _months = [
   'Jan',
@@ -29,17 +30,13 @@ class MatchCard extends StatelessWidget {
   });
 
   final TtMatch match;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
   final VoidCallback? onLongPress;
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final winner = match.winner;
-    final scores = match.games
-        .where((g) => g.log.isNotEmpty)
-        .map((g) => '${g.state.a}–${g.state.b}')
-        .join('  ·  ');
 
     TextStyle nameStyle(String side) => TextStyle(
       fontSize: 16,
@@ -84,14 +81,24 @@ class MatchCard extends StatelessWidget {
               const SizedBox(height: 8),
               Row(
                 children: [
+                  // Player A (left)
                   Expanded(
-                    child: Text(
-                      match.playerA.name,
-                      textAlign: TextAlign.end,
-                      overflow: TextOverflow.ellipsis,
-                      style: nameStyle('A'),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        Flexible(
+                          child: Text(
+                            match.playerA.name,
+                            overflow: TextOverflow.ellipsis,
+                            style: nameStyle('A'),
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Icon(Icons.circle, size: 10, color: cs.primary),
+                      ],
                     ),
                   ),
+
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 14),
                     child: Text(
@@ -102,24 +109,30 @@ class MatchCard extends StatelessWidget {
                       ),
                     ),
                   ),
+                  // Player B (right)
                   Expanded(
-                    child: Text(
-                      match.playerB.name,
-                      overflow: TextOverflow.ellipsis,
-                      style: nameStyle('B'),
+                    child: Row(
+                      children: [
+                        Icon(Icons.circle, size: 10, color: cs.tertiary),
+                        const SizedBox(width: 6),
+                        Flexible(
+                          child: Text(
+                            match.playerB.name,
+                            overflow: TextOverflow.ellipsis,
+                            style: nameStyle('B'),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
               ),
-              if (scores.isNotEmpty) ...[
-                const SizedBox(height: 6),
-                Center(
-                  child: Text(
-                    scores,
-                    style: TextStyle(color: cs.onSurfaceVariant, fontSize: 13),
-                  ),
+              const SizedBox(height: 10),
+              for (final g in match.games.where((g) => g.log.isNotEmpty))
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 2),
+                  child: GamePointDots(log: g.log, firstServer: g.firstServer),
                 ),
-              ],
               if (match.note.isNotEmpty) ...[
                 const SizedBox(height: 8),
                 Center(child: Text('💬 ${match.note}')),
