@@ -1,3 +1,23 @@
+import { createRemoteJWKSet, jwtVerify } from "jose";
+
+const JWKS = createRemoteJWKSet(
+	new URL("https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com")
+);
+
+async function verifyFirebaseUser(request, env) {
+	const auth = request.headers.get("Authorization") ?? "";
+	if (!auth.startsWith("Bearer ")) return null;
+	try {
+		const { payload } = await jwtVerify(auth.slice(7), JWKS, {
+			issuer: `https://securetoken.google.com/${env.FIREBASE_PROJECT_ID}`,
+			audience: env.FIREBASE_PROJECT_ID,
+		});
+		return payload; // payload.sub = the caller's uid
+	} catch {
+		return null;
+	}
+}
+
 async function getAccessToken(env, scope) {
 	const header = { alg: "RS256", typ: "JWT" };
 	const now = Math.floor(Date.now() / 1000);
@@ -382,9 +402,8 @@ export default {
 			return new Response("Method not allowed", { status: 405 });
 		}
 
-		if (request.headers.get("X-Okaeri-Secret") !== env.SHARED_SECRET) {
-			return new Response("Unauthorized", { status: 401 });
-		}
+		const user = await verifyFirebaseUser(request, env);
+		if (!user) return new Response("Unauthorized", { status: 401 });
 
 		const { token, title, body } = await request.json();
 
