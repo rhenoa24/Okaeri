@@ -73,40 +73,40 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
     }
   }
 
-  Future<void> _confirmUnpair(String coupleId) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Unpair from partner?'),
-        content: const Text(
-          'You and your partner will both be disconnected, and ALL shared '
-          'notes, messages, and calendar entries will be permanently deleted. '
-          'This invite code will also stop working.\n\n'
-          'This cannot be undone.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: Text(
-              'Delete & Unpair',
-              style: TextStyle(color: Theme.of(context).colorScheme.error),
-            ),
-          ),
-        ],
-      ),
-    );
+  // Future<void> _confirmUnpair(String coupleId) async {
+  //   final confirmed = await showDialog<bool>(
+  //     context: context,
+  //     builder: (context) => AlertDialog(
+  //       title: const Text('Unpair from partner?'),
+  //       content: const Text(
+  //         'You and your partner will both be disconnected, and ALL shared '
+  //         'notes, messages, and calendar entries will be permanently deleted. '
+  //         'This invite code will also stop working.\n\n'
+  //         'This cannot be undone.',
+  //       ),
+  //       actions: [
+  //         TextButton(
+  //           onPressed: () => Navigator.pop(context, false),
+  //           child: const Text('Cancel'),
+  //         ),
+  //         TextButton(
+  //           onPressed: () => Navigator.pop(context, true),
+  //           child: Text(
+  //             'Delete & Unpair',
+  //             style: TextStyle(color: Theme.of(context).colorScheme.error),
+  //           ),
+  //         ),
+  //       ],
+  //     ),
+  //   );
 
-    if (confirmed != true) return;
+  //   if (confirmed != true) return;
 
-    setState(() => _isUnpairing = true);
-    await _coupleService.unpair(coupleId);
-    // No need to manually navigate — AuthGate's stream will detect
-    // coupleId == null and route back to PairingScreen automatically.
-  }
+  //   setState(() => _isUnpairing = true);
+  //   // await _coupleService.unpair(coupleId);
+  //   // No need to manually navigate — AuthGate's stream will detect
+  //   // coupleId == null and route back to PairingScreen automatically.
+  // }
 
   @override
   void dispose() {

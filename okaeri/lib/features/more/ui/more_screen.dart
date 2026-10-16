@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:okaeri/features/table_tennis/ui/our_scoreboard_screen.dart';
 import 'profile_settings_screen.dart';
 // import '../../theme/theme_preview.dart';
 import '../../../core/theme/theme_controller.dart';
@@ -47,6 +48,26 @@ class _MoreScreenState extends State<MoreScreen> {
                 MaterialPageRoute(
                   builder: (_) =>
                       PeriodTrackerScreen(coupleId: widget.coupleId),
+                ),
+              );
+            },
+          ),
+
+          const Divider(),
+
+          ListTile(
+            leading: const Icon(Icons.sports_tennis),
+            title: const Text('Our Scoreboard'),
+            subtitle: const Text('Table tennis'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () {
+              final uid = FirebaseAuth.instance.currentUser?.uid;
+              if (uid == null) return;
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) =>
+                      OurScoreboardScreen(coupleId: widget.coupleId, uid: uid),
                 ),
               );
             },

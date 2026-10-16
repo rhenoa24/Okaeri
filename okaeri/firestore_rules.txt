@@ -83,7 +83,7 @@ service cloud.firestore {
       // ---------- shared couple collections (fully editable together) ----------
       match /{collection}/{docId} {
         allow read, write: if isCoupleMember(coupleId) &&
-          collection in ['messageBoard', 'calendarNotes', 'plans', 'periodTracker', 'meta'];
+          collection in ['messageBoard', 'calendarNotes', 'plans', 'periodTracker', 'meta', 'matches'];
       }
 
       // ---------- notes ("Our Room" + "My Corner", split by visibility) ----------
